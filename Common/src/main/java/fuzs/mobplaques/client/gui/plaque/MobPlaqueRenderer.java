@@ -64,7 +64,9 @@ public abstract class MobPlaqueRenderer {
         Component component = this.getComponent(entity);
         int totalWidth = this.getWidth(font, entity);
         Matrix4f matrix4f = poseStack.last().pose();
-        font.drawInBatch(component, posX - totalWidth / 2 + BACKGROUND_BORDER_SIZE, posY + BACKGROUND_BORDER_SIZE + 1, this.getColor(entity), false, matrix4f, bufferSource, false, 0, packedLight);
+        // light value stolen from Neat mod by Vazkii, probably shows up elsewhere in vanilla though
+        // also kinda there to hide the fact that icons always render with full brightness, not sure what to do about that otherwise lol
+        font.drawInBatch(component, posX - totalWidth / 2 + BACKGROUND_BORDER_SIZE, posY + BACKGROUND_BORDER_SIZE + 1, this.getColor(entity), false, matrix4f, bufferSource, false, 0, 0xF000F0);
     }
 
     private void renderIcon(PoseStack poseStack, int posX, int posY, Font font, LivingEntity entity) {

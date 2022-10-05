@@ -49,6 +49,10 @@ public class ClientConfig implements ConfigCore {
     @Config(category = KEY_GENERAL_CATEGORY, description = "Distance to the mob at which plaques will still be visible. The distance is halved when the mob is crouching.")
     @Config.IntRange(min = 0)
     public int maxRenderDistance = 64;
+    @Config(category = KEY_GENERAL_CATEGORY, description = "Show plaques from mobs obstructed by walls the player cannot see through.")
+    public boolean behindWalls = false;
+    @Config(category = KEY_GENERAL_CATEGORY, description = "Dynamically increase plaque size the further away the camera is to simplify readability.")
+    public boolean scaleWithDistance = true;
     @Config(category = KEY_GENERAL_CATEGORY, name = "mob_blacklist", description = {"Entities blacklisted from showing any plaques.", ConfigDataSet.CONFIG_DESCRIPTION})
     List<String> mobBlacklistRaw = ConfigDataSet.toString(Registry.ENTITY_TYPE_REGISTRY, EntityType.ARMOR_STAND);
     @Config(category = KEY_GENERAL_CATEGORY, name = "disallowed_mob_selectors", description = {"Selectors for choosing mobs to prevent rendering plaques for, takes priority over allowed list."})
