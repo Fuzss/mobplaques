@@ -8,7 +8,7 @@ public class AirPlaqueRenderer extends TransitionPlaqueRenderer {
 
     @Override
     public boolean wantsToRender(LivingEntity entity) {
-        return entity.isEyeInFluid(FluidTags.WATER) || this.belowMaxValue(entity);
+        return this.allowRendering && (entity.isEyeInFluid(FluidTags.WATER) || this.belowMaxValue(entity));
     }
 
     @Override

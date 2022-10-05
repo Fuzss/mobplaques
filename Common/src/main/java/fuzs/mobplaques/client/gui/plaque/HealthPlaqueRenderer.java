@@ -15,7 +15,7 @@ public class HealthPlaqueRenderer extends TransitionPlaqueRenderer {
 
     @Override
     public boolean wantsToRender(LivingEntity entity) {
-        return !this.hideWhenFull || this.belowMaxValue(entity);
+        return this.allowRendering && (!this.hideWhenFull || this.belowMaxValue(entity));
     }
 
     @Override
@@ -65,19 +65,19 @@ public class HealthPlaqueRenderer extends TransitionPlaqueRenderer {
     }
 
     private enum HeartType {
-        CONTAINER(0, true),
-        NORMAL(2, true),
-        POISONED(4, true),
-        WITHERED(6, true),
-        ABSORBING(8, true),
-        FROZEN(9, true),
+        CONTAINER(0),
+        NORMAL(2),
+        POISONED(4),
+        WITHERED(6),
+        ABSORBING(8),
+        FROZEN(9),
         MOUNT(4, 1, false);
 
         private final int indexX;
         private final int indexY;
         private final boolean hardcoreVariant;
 
-        HeartType(int indexX, boolean hardcoreVariant) {
+        HeartType(int indexX) {
             this(indexX, 0, true);
         }
 

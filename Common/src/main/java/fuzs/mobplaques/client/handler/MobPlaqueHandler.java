@@ -1,5 +1,6 @@
 package fuzs.mobplaques.client.handler;
 
+import com.google.common.collect.Lists;
 import com.mojang.blaze3d.vertex.PoseStack;
 import fuzs.mobplaques.MobPlaques;
 import fuzs.mobplaques.client.gui.plaque.*;
@@ -15,13 +16,13 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.scores.Team;
+import org.apache.commons.lang3.mutable.MutableInt;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class MobPlaqueHandler {
+    private static final int PLAQUE_HORIZONTAL_DISTANCE = 2;
     private static final int PLAQUE_VERTICAL_DISTANCE = 2;
     public static final Map<ResourceLocation, MobPlaqueRenderer> PLAQUE_RENDERERS = new LinkedHashMap<String, MobPlaqueRenderer>() {{
         this.put("health", new HealthPlaqueRenderer());
@@ -31,24 +32,40 @@ public class MobPlaqueHandler {
     }}.entrySet().stream().collect(Collectors.toMap(e -> new ResourceLocation(MobPlaques.MOD_ID, e.getKey()), Map.Entry::getValue, (o1, o2) -> o1, LinkedHashMap::new));
 
     public static Optional<Boolean> onRenderNameTag(Entity entity, Component content, EntityRenderer<?> entityRenderer, PoseStack poseStack, MultiBufferSource multiBufferSource, int packedLight, float partialTick) {
-        if (!MobPlaques.CONFIG.get(ClientConfig.class).enableRendering.get()) return Optional.empty();
+        if (!MobPlaques.CONFIG.get(ClientConfig.class).allowRendering.get()) return Optional.empty();
         if (entity instanceof LivingEntity livingEntity && canMobRenderPlaques(livingEntity)) {
             Minecraft minecraft = Minecraft.getInstance();
             EntityRenderDispatcher entityRenderDispatcher = minecraft.getEntityRenderDispatcher();
             if (shouldShowName(livingEntity, entityRenderDispatcher)) {
                 poseStack.pushPose();
-                int offsetY = "deadmau5".equals(content.getString()) ? -12 : -2;
+                int offsetY = "deadmau5".equals(content.getString()) ? -13 : -3;
                 poseStack.translate(0.0, livingEntity.getBbHeight() + 0.5, 0.0);
                 poseStack.mulPose(entityRenderDispatcher.cameraOrientation());
                 float scale = (float) (0.025F * MobPlaques.CONFIG.get(ClientConfig.class).plaqueScale);
                 poseStack.scale(-scale, -scale, scale);
-                offsetY -= getPlaquesHeight(minecraft.font, livingEntity) + PLAQUE_VERTICAL_DISTANCE;
+                offsetY -= MobPlaques.CONFIG.get(ClientConfig.class).heightOffset;
+                if (MobPlaques.CONFIG.get(ClientConfig.class).renderBelowNameTag) {
+                    offsetY += 23;
+                } else {
+                    offsetY -= getPlaquesHeight(minecraft.font, livingEntity) + PLAQUE_VERTICAL_DISTANCE;
+                }
                 boolean plaqueBackground = MobPlaques.CONFIG.get(ClientConfig.class).plaqueBackground;
-                for (MobPlaqueRenderer plaqueRenderer : PLAQUE_RENDERERS.values()) {
-                    if (plaqueRenderer.wantsToRender(livingEntity)) {
-                        plaqueRenderer.render(poseStack, 0, offsetY, multiBufferSource, packedLight, plaqueBackground, minecraft.font, livingEntity);
-                        offsetY += plaqueRenderer.getHeight() + PLAQUE_VERTICAL_DISTANCE;
+                Iterator<MobPlaqueRenderer> iterator = PLAQUE_RENDERERS.values().iterator();
+                List<MutableInt> widths = getPlaquesWidths(minecraft.font, livingEntity);
+                for (MutableInt width : widths) {
+                    int rowStart = -width.intValue() / 2;
+                    int maxRowHeight = 0;
+                    while (iterator.hasNext()) {
+                        MobPlaqueRenderer plaqueRenderer = iterator.next();
+                        if (!plaqueRenderer.wantsToRender(livingEntity)) continue;
+                        int plaqueWidth = plaqueRenderer.getWidth(minecraft.font, livingEntity);
+                        plaqueRenderer.render(poseStack, rowStart + plaqueWidth / 2, offsetY, multiBufferSource, packedLight, plaqueBackground, minecraft.font, livingEntity);
+                        maxRowHeight = Math.max(plaqueRenderer.getHeight(), maxRowHeight);
+                        plaqueWidth += PLAQUE_HORIZONTAL_DISTANCE;
+                        rowStart += plaqueWidth;
+                        if (width.addAndGet(-plaqueWidth) <= 0) break;
                     }
+                    offsetY += maxRowHeight + PLAQUE_VERTICAL_DISTANCE;
                 }
                 poseStack.popPose();
             }
@@ -56,20 +73,38 @@ public class MobPlaqueHandler {
         return Optional.empty();
     }
 
-    private static int getPlaquesHeight(Font font, LivingEntity entity) {
+    private static List<MutableInt> getPlaquesWidths(Font font, LivingEntity entity) {
         int maxWidth = MobPlaques.CONFIG.get(ClientConfig.class).maxPlaqueRowWidth;
-        int currentWidth = 0;
-        int currentMaxHeight = 0;
-        int totalHeight = 0;
+        List<MutableInt> widths = Lists.newArrayList();
+        int index = -1;
         for (MobPlaqueRenderer plaqueRenderer : PLAQUE_RENDERERS.values()) {
             if (plaqueRenderer.wantsToRender(entity)) {
                 int plaqueWidth = plaqueRenderer.getWidth(font, entity);
-                if (currentWidth == 0 || maxWidth < currentWidth + plaqueWidth) {
+                if (widths.isEmpty() || maxWidth < widths.get(index).intValue() + PLAQUE_HORIZONTAL_DISTANCE + plaqueWidth) {
+                    widths.add(new MutableInt(plaqueWidth));
+                    index++;
+                } else {
+                    widths.get(index).add(PLAQUE_HORIZONTAL_DISTANCE + plaqueWidth);
+                }
+            }
+        }
+        return widths;
+    }
+
+    private static int getPlaquesHeight(Font font, LivingEntity entity) {
+        int maxWidth = MobPlaques.CONFIG.get(ClientConfig.class).maxPlaqueRowWidth;
+        int currentWidth = -1;
+        int currentMaxHeight = 0;
+        int totalHeight = -1;
+        for (MobPlaqueRenderer plaqueRenderer : PLAQUE_RENDERERS.values()) {
+            if (plaqueRenderer.wantsToRender(entity)) {
+                int plaqueWidth = plaqueRenderer.getWidth(font, entity);
+                if (currentWidth == -1 || maxWidth < currentWidth + PLAQUE_HORIZONTAL_DISTANCE + plaqueWidth) {
                     currentWidth = plaqueWidth;
                     currentMaxHeight = plaqueRenderer.getHeight();
-                    totalHeight += plaqueRenderer.getHeight() + (totalHeight == 0 ? 0 : PLAQUE_VERTICAL_DISTANCE);
+                    totalHeight += plaqueRenderer.getHeight() + (totalHeight == -1 ? 0 : PLAQUE_VERTICAL_DISTANCE);
                 } else {
-                    currentWidth += plaqueWidth;
+                    currentWidth += PLAQUE_HORIZONTAL_DISTANCE + plaqueWidth;
                     if (plaqueRenderer.getHeight() > currentMaxHeight) {
                         totalHeight += plaqueRenderer.getHeight() - currentMaxHeight;
                         currentMaxHeight = plaqueRenderer.getHeight();
@@ -94,7 +129,8 @@ public class MobPlaqueHandler {
             return false;
         }
         double d0 = entityRenderDispatcher.distanceToSqr(entity);
-        float f = entity.isDiscrete() ? 32.0F : 64.0F;
+        int maxRenderDistance = MobPlaques.CONFIG.get(ClientConfig.class).maxRenderDistance;
+        float f = entity.isDiscrete() ? maxRenderDistance / 2.0F : maxRenderDistance;
         if (d0 >= (double) (f * f)) {
             return false;
         } else {
@@ -120,7 +156,6 @@ public class MobPlaqueHandler {
                     }
                 }
             }
-
             return Minecraft.renderNames() && entity != minecraft.getCameraEntity() && invisibleToPlayer && !entity.isVehicle();
         }
     }

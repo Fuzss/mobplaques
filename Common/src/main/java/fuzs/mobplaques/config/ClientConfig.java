@@ -31,23 +31,30 @@ import java.util.stream.Stream;
 public class ClientConfig implements ConfigCore {
     private static final String KEY_GENERAL_CATEGORY = "general";
 
-    public AbstractConfigValue<Boolean> enableRendering;
-    @Config(category = KEY_GENERAL_CATEGORY, description = "Show plaques for the entity picked by the crosshair.")
+    public AbstractConfigValue<Boolean> allowRendering;
+    @Config(category = KEY_GENERAL_CATEGORY, description = "Show plaques for the entity picked by the crosshair only.")
     public boolean pickedEntity = false;
     @Config(category = KEY_GENERAL_CATEGORY, description = "Custom scale for rendering plaques.")
     @Config.DoubleRange(min = 0.05, max = 2.0)
     public double plaqueScale = 0.5;
-    @Config(category = KEY_GENERAL_CATEGORY, description = "Amount of pixels a row of plaques may take up, when exceeding this value a new row will be begun.")
+    @Config(category = KEY_GENERAL_CATEGORY, description = "Amount of pixels a row of plaques may take up, when exceeding this value a new row will be started.")
     @Config.IntRange(min = 0)
-    public int maxPlaqueRowWidth = 32;
+    public int maxPlaqueRowWidth = 108;
+    @Config(category = KEY_GENERAL_CATEGORY, description = "Render mob plaques below the mob's name tag instead of above.")
+    public boolean renderBelowNameTag = true;
     @Config(category = KEY_GENERAL_CATEGORY, description = "Show a black background box behind plaques.")
     public boolean plaqueBackground = true;
-    @Config(category = KEY_GENERAL_CATEGORY, description = {"Entities blacklisted from showing any plaques.", ConfigDataSet.CONFIG_DESCRIPTION})
+    @Config(category = KEY_GENERAL_CATEGORY, description = "Height offset from default position.")
+    public int heightOffset = 0;
+    @Config(category = KEY_GENERAL_CATEGORY, description = "Distance to the mob at which plaques will still be visible. The distance is halved when the mob is crouching.")
+    @Config.IntRange(min = 0)
+    public int maxRenderDistance = 64;
+    @Config(category = KEY_GENERAL_CATEGORY, name = "mob_blacklist", description = {"Entities blacklisted from showing any plaques.", ConfigDataSet.CONFIG_DESCRIPTION})
     List<String> mobBlacklistRaw = ConfigDataSet.toString(Registry.ENTITY_TYPE_REGISTRY, EntityType.ARMOR_STAND);
-    @Config(name = "disallowed_mob_selectors", description = {"Selectors for choosing mobs to prevent rendering plaques for, takes priority over allowed list."})
+    @Config(category = KEY_GENERAL_CATEGORY, name = "disallowed_mob_selectors", description = {"Selectors for choosing mobs to prevent rendering plaques for, takes priority over allowed list."})
     @Config.AllowedValues(values = {"ALL", "TAMED", "TAMED_ONLY_OWNER", "PLAYER", "MONSTER", "BOSS", "MOUNT"})
     List<String> disallowedMobSelectorsRaw = Lists.newArrayList();
-    @Config(name = "allowed_mob_selectors", description = {"Selectors for choosing mobs to render plaques for."})
+    @Config(category = KEY_GENERAL_CATEGORY, name = "allowed_mob_selectors", description = {"Selectors for choosing mobs to render plaques for."})
     @Config.AllowedValues(values = {"ALL", "TAMED", "TAMED_ONLY_OWNER", "PLAYER", "MONSTER", "BOSS", "MOUNT"})
     List<String> allowedMobSelectorsRaw = Stream.of(MobPlaquesSelector.ALL).map(Enum::name).collect(Collectors.toList());
 
@@ -58,7 +65,7 @@ public class ClientConfig implements ConfigCore {
     @Override
     public void addToBuilder(AbstractConfigBuilder builder, ValueCallback callback) {
         builder.push(KEY_GENERAL_CATEGORY);
-        this.enableRendering = builder.comment("Are mob plaques enabled, toggleable in-game using the 'P' key by default.").define("enable_rendering", true);
+        this.allowRendering = builder.comment("Are mob plaques enabled, toggleable in-game using the 'J' key by default.").define("allow_rendering", true);
         builder.pop();
         for (Map.Entry<ResourceLocation, MobPlaqueRenderer> entry : MobPlaqueHandler.PLAQUE_RENDERERS.entrySet()) {
             builder.push(entry.getKey().getPath());

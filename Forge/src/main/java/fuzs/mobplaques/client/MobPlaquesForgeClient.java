@@ -3,6 +3,7 @@ package fuzs.mobplaques.client;
 import fuzs.mobplaques.MobPlaques;
 import fuzs.mobplaques.client.handler.KeyBindingHandler;
 import fuzs.mobplaques.client.handler.MobPlaqueHandler;
+import fuzs.puzzleslib.client.core.ClientCoreServices;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderNameTagEvent;
@@ -17,6 +18,7 @@ public class MobPlaquesForgeClient {
 
     @SubscribeEvent
     public static void onConstructMod(final FMLConstructModEvent evt) {
+        ClientCoreServices.FACTORIES.clientModConstructor(MobPlaques.MOD_ID).accept(new MobPlaquesClient());
         registerHandlers();
     }
 

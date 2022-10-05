@@ -63,22 +63,4 @@ public abstract class TransitionPlaqueRenderer extends MobPlaqueRenderer {
         color |= colorB << 0;
         return color;
     }
-
-    private static int getTransitionedColor2(int startColor, int endColor, float transition) {
-        transition = 1.0F - transition;
-        int startR = startColor >> 16 & 0xFF;
-        int startG = startColor >> 8 & 0xFF;
-        int startB = startColor >> 0 & 0xFF;
-        int endR = endColor >> 16 & 0xFF;
-        int endG = endColor >> 8 & 0xFF;
-        int endB = endColor >> 0 & 0xFF;
-        int colorR = startR + (startR > endR ? -1 : 1) * (int) (Math.abs(startR - endR) * transition);
-        int colorG = startG + (startG > endG ? -1 : 1) * (int) (Math.abs(startG - endG) * transition);
-        int colorB = startB + (startB > endB ? -1 : 1) * (int) (Math.abs(startB - endB) * transition);
-        int color = 0;
-        color |= colorR << 16;
-        color |= colorG << 8;
-        color |= colorB << 0;
-        return color;
-    }
 }

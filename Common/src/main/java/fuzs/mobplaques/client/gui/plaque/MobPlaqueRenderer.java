@@ -20,8 +20,10 @@ public abstract class MobPlaqueRenderer {
     protected static final int ICON_SIZE = 9;
     protected static final int TEXT_ICON_GAP = 2;
 
+    protected boolean allowRendering;
+
     public boolean wantsToRender(LivingEntity entity) {
-        return this.getValue(entity) > 0;
+        return this.allowRendering && this.getValue(entity) > 0;
     }
 
     public int getWidth(Font font, LivingEntity entity) {
@@ -62,10 +64,7 @@ public abstract class MobPlaqueRenderer {
         Component component = this.getComponent(entity);
         int totalWidth = this.getWidth(font, entity);
         Matrix4f matrix4f = poseStack.last().pose();
-        font.drawInBatch(component, posX - totalWidth / 2 + BACKGROUND_BORDER_SIZE, posY + BACKGROUND_BORDER_SIZE + 1, 553648127, false, matrix4f, bufferSource, false, 0, packedLight);
-        if (!entity.isDiscrete()) {
-            font.drawInBatch(component, posX - totalWidth / 2 + BACKGROUND_BORDER_SIZE, posY + BACKGROUND_BORDER_SIZE + 1, this.getColor(entity), false, matrix4f, bufferSource, false, 0, packedLight);
-        }
+        font.drawInBatch(component, posX - totalWidth / 2 + BACKGROUND_BORDER_SIZE, posY + BACKGROUND_BORDER_SIZE + 1, this.getColor(entity), false, matrix4f, bufferSource, false, 0, packedLight);
     }
 
     private void renderIcon(PoseStack poseStack, int posX, int posY, Font font, LivingEntity entity) {
@@ -94,6 +93,6 @@ public abstract class MobPlaqueRenderer {
     }
 
     public void setupConfig(AbstractConfigBuilder builder, ValueCallback callback) {
-
+        callback.accept(builder.comment("Allow for rendering this type of plaque.").define("allow_rendering", true), v -> this.allowRendering = v);
     }
 }
