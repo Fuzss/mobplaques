@@ -41,9 +41,9 @@ public class ClientConfig implements ConfigCore {
     @Config.IntRange(min = 0)
     public int maxPlaqueRowWidth = 108;
     @Config(category = KEY_GENERAL_CATEGORY, description = "Render mob plaques below the mob's name tag instead of above.")
-    public boolean renderBelowNameTag = true;
-    @Config(category = KEY_GENERAL_CATEGORY, description = "Show a black background box behind plaques.")
-    public boolean plaqueBackground = true;
+    public boolean renderBelowNameTag = false;
+    @Config(category = KEY_GENERAL_CATEGORY, description = "Show a black background box behind plaques. Disabled by default as it doesn't work with shaders.")
+    public boolean plaqueBackground = false;
     @Config(category = KEY_GENERAL_CATEGORY, description = "Height offset from default position.")
     public int heightOffset = 0;
     @Config(category = KEY_GENERAL_CATEGORY, description = "Distance to the mob at which plaques will still be visible. The distance is halved when the mob is crouching.")
@@ -69,6 +69,7 @@ public class ClientConfig implements ConfigCore {
     @Override
     public void addToBuilder(AbstractConfigBuilder builder, ValueCallback callback) {
         builder.push(KEY_GENERAL_CATEGORY);
+        // we need this here to be able to set a value
         this.allowRendering = builder.comment("Are mob plaques enabled, toggleable in-game using the 'J' key by default.").define("allow_rendering", true);
         builder.pop();
         for (Map.Entry<ResourceLocation, MobPlaqueRenderer> entry : MobPlaqueHandler.PLAQUE_RENDERERS.entrySet()) {
