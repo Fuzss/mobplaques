@@ -41,7 +41,8 @@ public class MobPlaqueHandler {
         if (entity instanceof LivingEntity livingEntity && canMobRenderPlaques(livingEntity)) {
             Minecraft minecraft = Minecraft.getInstance();
             EntityRenderDispatcher entityRenderDispatcher = minecraft.getEntityRenderDispatcher();
-            if (shouldShowName(livingEntity, entityRenderDispatcher)) {
+            // other mods might be rendering this mob without a level in some menu, so camera is null then
+            if (entityRenderDispatcher.camera != null && shouldShowName(livingEntity, entityRenderDispatcher)) {
                 if (entityRenderDispatcher.camera.getEntity() instanceof LivingEntity camera && isMobUnobstructed(minecraft.level, camera, livingEntity, partialTick)) {
                     poseStack.pushPose();
                     int offsetY = "deadmau5".equals(content.getString()) ? -13 : -3;
