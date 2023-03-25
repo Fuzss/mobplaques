@@ -5,6 +5,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import fuzs.mobplaques.MobPlaques;
 import fuzs.mobplaques.client.gui.plaque.*;
 import fuzs.mobplaques.config.ClientConfig;
+import fuzs.puzzleslib.api.event.v1.core.EventResult;
+import fuzs.puzzleslib.api.event.v1.data.DefaultedValue;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -23,7 +25,10 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Team;
 import org.apache.commons.lang3.mutable.MutableInt;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class MobPlaqueHandler {
@@ -36,8 +41,8 @@ public class MobPlaqueHandler {
         this.put("toughness", new ToughnessPlaqueRenderer());
     }}.entrySet().stream().collect(Collectors.toMap(e -> new ResourceLocation(MobPlaques.MOD_ID, e.getKey()), Map.Entry::getValue, (o1, o2) -> o1, LinkedHashMap::new));
 
-    public static Optional<Boolean> onRenderNameTag(Entity entity, Component content, EntityRenderer<?> entityRenderer, PoseStack poseStack, MultiBufferSource multiBufferSource, int packedLight, float partialTick) {
-        if (!MobPlaques.CONFIG.get(ClientConfig.class).allowRendering.get()) return Optional.empty();
+    public static EventResult onRenderNameTag(Entity entity, DefaultedValue<Component> content, EntityRenderer<?> entityRenderer, PoseStack poseStack, MultiBufferSource multiBufferSource, int packedLight, float partialTick) {
+        if (!MobPlaques.CONFIG.get(ClientConfig.class).allowRendering.get()) return EventResult.PASS;
         if (entity instanceof LivingEntity livingEntity && canMobRenderPlaques(livingEntity)) {
             Minecraft minecraft = Minecraft.getInstance();
             EntityRenderDispatcher entityRenderDispatcher = minecraft.getEntityRenderDispatcher();
@@ -45,7 +50,7 @@ public class MobPlaqueHandler {
             if (entityRenderDispatcher.camera != null && shouldShowName(livingEntity, entityRenderDispatcher)) {
                 if (entityRenderDispatcher.camera.getEntity() instanceof LivingEntity camera && isMobUnobstructed(minecraft.level, camera, livingEntity, partialTick)) {
                     poseStack.pushPose();
-                    int offsetY = "deadmau5".equals(content.getString()) ? -13 : -3;
+                    int offsetY = "deadmau5".equals(content.get().getString()) ? -13 : -3;
                     poseStack.translate(0.0, livingEntity.getBbHeight() + 0.5, 0.0);
                     poseStack.mulPose(entityRenderDispatcher.cameraOrientation());
                     float plaqueScale = (float) MobPlaques.CONFIG.get(ClientConfig.class).plaqueScale;
@@ -85,7 +90,7 @@ public class MobPlaqueHandler {
                 }
             }
         }
-        return Optional.empty();
+        return EventResult.PASS;
     }
 
     private static List<MutableInt> getPlaquesWidths(Font font, LivingEntity entity) {

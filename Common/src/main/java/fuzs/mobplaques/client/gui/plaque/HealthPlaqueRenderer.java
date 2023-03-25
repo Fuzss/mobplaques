@@ -1,8 +1,6 @@
 package fuzs.mobplaques.client.gui.plaque;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import fuzs.puzzleslib.config.ValueCallback;
-import fuzs.puzzleslib.config.core.AbstractConfigBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.util.Mth;
@@ -11,11 +9,10 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Saddleable;
 
 public class HealthPlaqueRenderer extends TransitionPlaqueRenderer {
-    private boolean hideWhenFull;
 
     @Override
     public boolean wantsToRender(LivingEntity entity) {
-        return this.allowRendering && (!this.hideWhenFull || this.belowMaxValue(entity));
+        return this.allowRendering && (!this.hideAtFullHealth(entity) || this.belowMaxValue(entity));
     }
 
     @Override
@@ -56,12 +53,6 @@ public class HealthPlaqueRenderer extends TransitionPlaqueRenderer {
     @Override
     protected int getIconY(LivingEntity entity) {
         return HeartType.selectHeartType(entity).getTextureY();
-    }
-
-    @Override
-    public void setupConfig(AbstractConfigBuilder builder, ValueCallback callback) {
-        super.setupConfig(builder, callback);
-        callback.accept(builder.comment("Hide health plaque when mob has full health.").define("hide_when_full", false), v -> this.hideWhenFull = v);
     }
 
     private enum HeartType {

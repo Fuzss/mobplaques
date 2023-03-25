@@ -1,10 +1,10 @@
 package fuzs.mobplaques.client.gui.plaque;
 
-import fuzs.puzzleslib.config.ValueCallback;
-import fuzs.puzzleslib.config.core.AbstractConfigBuilder;
+import fuzs.puzzleslib.api.config.v3.ValueCallback;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraftforge.common.ForgeConfigSpec;
 
 public abstract class TransitionPlaqueRenderer extends MobPlaqueRenderer {
     private boolean shiftColors;
@@ -41,7 +41,7 @@ public abstract class TransitionPlaqueRenderer extends MobPlaqueRenderer {
     }
 
     @Override
-    public void setupConfig(AbstractConfigBuilder builder, ValueCallback callback) {
+    public void setupConfig(ForgeConfigSpec.Builder builder, ValueCallback callback) {
         super.setupConfig(builder, callback);
         callback.accept(builder.comment("Transition text colors depending on current percentage.").define("shift_colors", true), v -> this.shiftColors = v);
         callback.accept(builder.comment("Show current amount as percentage instead of as absolute value.").define("relative_value", false), v -> this.relativeValue = v);

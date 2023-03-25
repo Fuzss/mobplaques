@@ -1,14 +1,13 @@
 package fuzs.mobplaques.client.gui.plaque;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.LivingEntity;
 
 public class AirPlaqueRenderer extends TransitionPlaqueRenderer {
 
     @Override
     public boolean wantsToRender(LivingEntity entity) {
-        return this.allowRendering && this.belowMaxValue(entity);
+        return this.allowRendering && !this.hideAtFullHealth(entity) && this.belowMaxValue(entity);
     }
 
     @Override

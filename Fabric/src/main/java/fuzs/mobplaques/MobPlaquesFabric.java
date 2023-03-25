@@ -1,12 +1,12 @@
 package fuzs.mobplaques;
 
-import fuzs.puzzleslib.core.CoreServices;
+import fuzs.puzzleslib.api.core.v1.ModConstructor;
 import net.fabricmc.api.ModInitializer;
 
 public class MobPlaquesFabric implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        CoreServices.FACTORIES.modConstructor(MobPlaques.MOD_ID).accept(new MobPlaques());
+        ModConstructor.construct(MobPlaques.MOD_ID, MobPlaques::new);
     }
 }

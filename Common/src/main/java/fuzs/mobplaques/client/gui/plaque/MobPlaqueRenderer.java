@@ -2,9 +2,9 @@ package fuzs.mobplaques.client.gui.plaque;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Matrix4f;
-import fuzs.puzzleslib.config.ValueCallback;
-import fuzs.puzzleslib.config.core.AbstractConfigBuilder;
+import fuzs.mobplaques.MobPlaques;
+import fuzs.mobplaques.config.ClientConfig;
+import fuzs.puzzleslib.api.config.v3.ValueCallback;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiComponent;
@@ -13,6 +13,8 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraftforge.common.ForgeConfigSpec;
+import org.joml.Matrix4f;
 
 public abstract class MobPlaqueRenderer {
     protected static final int PLAQUE_HEIGHT = 11;
@@ -23,7 +25,17 @@ public abstract class MobPlaqueRenderer {
     protected boolean allowRendering;
 
     public boolean wantsToRender(LivingEntity entity) {
-        return this.allowRendering && this.getValue(entity) > 0;
+        return this.allowRendering && !this.hideAtFullHealth(entity) && this.getValue(entity) > 0;
+    }
+
+    protected boolean hideAtFullHealth(LivingEntity entity) {
+        return MobPlaques.CONFIG.get(ClientConfig.class).hideAtFullHealth && !this.belowMaxHealth(entity);
+    }
+
+    private boolean belowMaxHealth(LivingEntity entity) {
+        double value = Math.ceil(entity.getHealth());
+        double maxValue = Math.ceil(entity.getMaxHealth());
+        return value < maxValue;
     }
 
     public int getWidth(Font font, LivingEntity entity) {
@@ -94,7 +106,7 @@ public abstract class MobPlaqueRenderer {
         return GuiComponent.GUI_ICONS_LOCATION;
     }
 
-    public void setupConfig(AbstractConfigBuilder builder, ValueCallback callback) {
+    public void setupConfig(ForgeConfigSpec.Builder builder, ValueCallback callback) {
         callback.accept(builder.comment("Allow for rendering this type of plaque.").define("allow_rendering", true), v -> this.allowRendering = v);
     }
 }

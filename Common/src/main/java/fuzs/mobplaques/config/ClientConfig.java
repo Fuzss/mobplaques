@@ -2,17 +2,15 @@ package fuzs.mobplaques.config;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import fuzs.mobplaques.client.core.ClientModServices;
 import fuzs.mobplaques.client.gui.plaque.MobPlaqueRenderer;
 import fuzs.mobplaques.client.handler.MobPlaqueHandler;
-import fuzs.puzzleslib.config.ConfigCore;
-import fuzs.puzzleslib.config.ValueCallback;
-import fuzs.puzzleslib.config.annotation.Config;
-import fuzs.puzzleslib.config.core.AbstractConfigBuilder;
-import fuzs.puzzleslib.config.core.AbstractConfigValue;
-import fuzs.puzzleslib.config.serialization.ConfigDataSet;
+import fuzs.puzzleslib.api.config.v3.Config;
+import fuzs.puzzleslib.api.config.v3.ConfigCore;
+import fuzs.puzzleslib.api.config.v3.ValueCallback;
+import fuzs.puzzleslib.api.config.v3.serialization.ConfigDataSet;
+import fuzs.puzzleslib.api.core.v1.CommonAbstractions;
 import net.minecraft.client.Minecraft;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -21,6 +19,7 @@ import net.minecraft.world.entity.Saddleable;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
+import net.minecraftforge.common.ForgeConfigSpec;
 
 import java.util.List;
 import java.util.Map;
@@ -31,7 +30,9 @@ import java.util.stream.Stream;
 public class ClientConfig implements ConfigCore {
     private static final String KEY_GENERAL_CATEGORY = "general";
 
-    public AbstractConfigValue<Boolean> allowRendering;
+    public ForgeConfigSpec.ConfigValue<Boolean> allowRendering;
+    @Config(category = KEY_GENERAL_CATEGORY, description = "Hide all plaques when mob has full health.")
+    public boolean hideAtFullHealth = false;
     @Config(category = KEY_GENERAL_CATEGORY, description = "Show plaques for the entity picked by the crosshair only.")
     public boolean pickedEntity = false;
     @Config(category = KEY_GENERAL_CATEGORY, description = "Custom scale for rendering plaques.")
@@ -54,7 +55,7 @@ public class ClientConfig implements ConfigCore {
     @Config(category = KEY_GENERAL_CATEGORY, description = "Dynamically increase plaque size the further away the camera is to simplify readability.")
     public boolean scaleWithDistance = true;
     @Config(category = KEY_GENERAL_CATEGORY, name = "mob_blacklist", description = {"Entities blacklisted from showing any plaques.", ConfigDataSet.CONFIG_DESCRIPTION})
-    List<String> mobBlacklistRaw = ConfigDataSet.toString(Registry.ENTITY_TYPE_REGISTRY, EntityType.ARMOR_STAND);
+    List<String> mobBlacklistRaw = ConfigDataSet.toString(Registries.ENTITY_TYPE, EntityType.ARMOR_STAND);
     @Config(category = KEY_GENERAL_CATEGORY, name = "disallowed_mob_selectors", description = {"Selectors for choosing mobs to prevent rendering plaques for, takes priority over allowed list."})
     @Config.AllowedValues(values = {"ALL", "TAMED", "TAMED_ONLY_OWNER", "PLAYER", "MONSTER", "BOSS", "MOUNT"})
     List<String> disallowedMobSelectorsRaw = Lists.newArrayList();
@@ -67,7 +68,7 @@ public class ClientConfig implements ConfigCore {
     public List<MobPlaquesSelector> allowedMobSelectors;
 
     @Override
-    public void addToBuilder(AbstractConfigBuilder builder, ValueCallback callback) {
+    public void addToBuilder(ForgeConfigSpec.Builder builder, ValueCallback callback) {
         builder.push(KEY_GENERAL_CATEGORY);
         // we need this here to be able to set a value
         this.allowRendering = builder.comment("Are mob plaques enabled, toggleable in-game using the 'J' key by default.").define("allow_rendering", true);
@@ -81,7 +82,7 @@ public class ClientConfig implements ConfigCore {
 
     @Override
     public void afterConfigReload() {
-        this.mobBlacklist = ConfigDataSet.of(Registry.ENTITY_TYPE_REGISTRY, this.mobBlacklistRaw);
+        this.mobBlacklist = ConfigDataSet.from(Registries.ENTITY_TYPE, this.mobBlacklistRaw);
         // manually process enum lists as night config keeps values as strings, making it hard to deal with as generic type suggests an enum value
         this.disallowedMobSelectors = this.disallowedMobSelectorsRaw.stream().map(MobPlaquesSelector::valueOf).collect(ImmutableList.toImmutableList());
         this.allowedMobSelectors = this.allowedMobSelectorsRaw.stream().map(MobPlaquesSelector::valueOf).collect(ImmutableList.toImmutableList());
@@ -128,7 +129,7 @@ public class ClientConfig implements ConfigCore {
 
             @Override
             public boolean canMobRenderPlaque(LivingEntity entity) {
-                return ClientModServices.ABSTRACTIONS.isBossMob(entity);
+                return CommonAbstractions.INSTANCE.isBossMob(entity.getType());
             }
         },
         MOUNT {
