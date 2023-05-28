@@ -3,9 +3,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog].
 
-## [v5.0.0-1.19.3] - 2023-03-25
-- Ported to Minecraft 1.19.3
-### Changed
-- Removed `hide_when_full` config option in favor of global `hide_at_full_health` option
+## [v6.0.0-1.19.4] - 2023-05-28
+- Ported to Minecraft 1.19.4
 
 [Keep a Changelog]: https://keepachangelog.com/en/1.0.0/

@@ -17,6 +17,6 @@ public class MobPlaquesClient implements ClientModConstructor {
 
     @Override
     public void onRegisterKeyMappings(KeyMappingsContext context) {
-        context.registerKeyMappings(KeyBindingHandler.TOGGLE_PLAQUES_KEY_MAPPING);
+        context.registerKeyMapping(KeyBindingHandler.TOGGLE_PLAQUES_KEY_MAPPING);
     }
 }
