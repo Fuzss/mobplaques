@@ -1,9 +1,12 @@
 package fuzs.mobplaques.client.gui.plaque;
 
-import net.minecraft.ChatFormatting;
 import net.minecraft.world.entity.LivingEntity;
 
 public class AirPlaqueRenderer extends TransitionPlaqueRenderer {
+
+    public AirPlaqueRenderer() {
+        super(0x0376BB, 0xED230D);
+    }
 
     @Override
     public boolean wantsToRender(LivingEntity entity) {
@@ -13,16 +16,6 @@ public class AirPlaqueRenderer extends TransitionPlaqueRenderer {
     @Override
     public int getValue(LivingEntity entity) {
         return Math.max(0, entity.getAirSupply() / 20);
-    }
-
-    @Override
-    protected int getHighColor() {
-        return ChatFormatting.AQUA.getColor();
-    }
-
-    @Override
-    protected int getLowColor() {
-        return ChatFormatting.RED.getColor();
     }
 
     @Override

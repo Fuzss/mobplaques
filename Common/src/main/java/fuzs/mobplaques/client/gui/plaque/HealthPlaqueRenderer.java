@@ -1,8 +1,7 @@
 package fuzs.mobplaques.client.gui.plaque;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
@@ -10,24 +9,18 @@ import net.minecraft.world.entity.Saddleable;
 
 public class HealthPlaqueRenderer extends TransitionPlaqueRenderer {
 
+    public HealthPlaqueRenderer() {
+        super(0x1EB100, 0xED230D);
+    }
+
     @Override
     public boolean wantsToRender(LivingEntity entity) {
         return this.allowRendering && (!this.hideAtFullHealth(entity) || this.belowMaxValue(entity));
     }
 
     @Override
-    protected int getHighColor() {
-        return ChatFormatting.GREEN.getColor();
-    }
-
-    @Override
-    protected int getLowColor() {
-        return ChatFormatting.RED.getColor();
-    }
-
-    @Override
     public int getValue(LivingEntity entity) {
-        return (int) Math.ceil(entity.getHealth()) + this.getAbsorptionValue(entity);
+        return (int) Math.ceil(Math.min(entity.getHealth(), entity.getMaxHealth())) + this.getAbsorptionValue(entity);
     }
 
     private int getAbsorptionValue(LivingEntity entity) {
@@ -40,9 +33,8 @@ public class HealthPlaqueRenderer extends TransitionPlaqueRenderer {
     }
 
     @Override
-    protected void renderIconBackground(PoseStack poseStack, int posX, int posY, LivingEntity entity) {
-        GuiComponent.blit(poseStack, posX, posY, HeartType.CONTAINER.getTextureX(), HeartType.CONTAINER.getTextureY(), ICON_SIZE, ICON_SIZE, 256, 256);
-        poseStack.translate(0.0F, 0.0F, -0.03F);
+    protected void renderIconBackground(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int posX, int posY, LivingEntity entity) {
+        this.innerRenderIcon(poseStack, bufferSource, packedLight, posX, posY, 0.01F, HeartType.CONTAINER.getTextureX(), HeartType.CONTAINER.getTextureY());
     }
 
     @Override

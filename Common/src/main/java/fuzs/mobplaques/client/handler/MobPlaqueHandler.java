@@ -18,10 +18,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.ClipContext;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Team;
 import org.apache.commons.lang3.mutable.MutableInt;
 
@@ -41,53 +37,54 @@ public class MobPlaqueHandler {
         this.put("toughness", new ToughnessPlaqueRenderer());
     }}.entrySet().stream().collect(Collectors.toMap(e -> new ResourceLocation(MobPlaques.MOD_ID, e.getKey()), Map.Entry::getValue, (o1, o2) -> o1, LinkedHashMap::new));
 
+    @SuppressWarnings("ConstantValue")
     public static EventResult onRenderNameTag(Entity entity, DefaultedValue<Component> content, EntityRenderer<?> entityRenderer, PoseStack poseStack, MultiBufferSource multiBufferSource, int packedLight, float partialTick) {
         if (!MobPlaques.CONFIG.get(ClientConfig.class).allowRendering.get()) return EventResult.PASS;
         if (entity instanceof LivingEntity livingEntity && canMobRenderPlaques(livingEntity)) {
             Minecraft minecraft = Minecraft.getInstance();
-            EntityRenderDispatcher entityRenderDispatcher = minecraft.getEntityRenderDispatcher();
+            EntityRenderDispatcher dispatcher = minecraft.getEntityRenderDispatcher();
             // other mods might be rendering this mob without a level in some menu, so camera is null then
-            if (entityRenderDispatcher.camera != null && shouldShowName(livingEntity, entityRenderDispatcher)) {
-                if (entityRenderDispatcher.camera.getEntity() instanceof LivingEntity camera && isMobUnobstructed(minecraft.level, camera, livingEntity, partialTick)) {
-                    poseStack.pushPose();
-                    int offsetY = "deadmau5".equals(content.get().getString()) ? -13 : -3;
-                    poseStack.translate(0.0, livingEntity.getBbHeight() + 0.5, 0.0);
-                    poseStack.mulPose(entityRenderDispatcher.cameraOrientation());
-                    float plaqueScale = (float) MobPlaques.CONFIG.get(ClientConfig.class).plaqueScale;
-                    if (MobPlaques.CONFIG.get(ClientConfig.class).scaleWithDistance) {
-                        double distanceSqr = entityRenderDispatcher.distanceToSqr(livingEntity);
-                        float pickRange = minecraft.gameMode.getPickRange();
-                        double scaleRatio = Mth.clamp((distanceSqr - Math.pow(pickRange / 2.0, 2.0)) / (Math.pow(pickRange * 2.0, 2.0) / 2.0), 0.0, 2.0);
-                        plaqueScale *= 1.0 + scaleRatio;
-                    }
-                    float scale = 0.025F * plaqueScale;
-                    poseStack.scale(-scale, -scale, scale);
-                    offsetY -= MobPlaques.CONFIG.get(ClientConfig.class).heightOffset * (0.5F / plaqueScale);
-                    if (MobPlaques.CONFIG.get(ClientConfig.class).renderBelowNameTag) {
-                        offsetY += 23 * (0.5F / plaqueScale);
-                    } else {
-                        offsetY -= (getPlaquesHeight(minecraft.font, livingEntity) + PLAQUE_VERTICAL_DISTANCE) * (0.5F / plaqueScale);
-                    }
-                    boolean plaqueBackground = MobPlaques.CONFIG.get(ClientConfig.class).plaqueBackground;
-                    Iterator<MobPlaqueRenderer> iterator = PLAQUE_RENDERERS.values().iterator();
-                    List<MutableInt> widths = getPlaquesWidths(minecraft.font, livingEntity);
-                    for (MutableInt width : widths) {
-                        int rowStart = -width.intValue() / 2;
-                        int maxRowHeight = 0;
-                        while (iterator.hasNext()) {
-                            MobPlaqueRenderer plaqueRenderer = iterator.next();
-                            if (!plaqueRenderer.wantsToRender(livingEntity)) continue;
-                            int plaqueWidth = plaqueRenderer.getWidth(minecraft.font, livingEntity);
-                            plaqueRenderer.render(poseStack, rowStart + plaqueWidth / 2, offsetY, multiBufferSource, packedLight, plaqueBackground, minecraft.font, livingEntity);
-                            maxRowHeight = Math.max(plaqueRenderer.getHeight(), maxRowHeight);
-                            plaqueWidth += PLAQUE_HORIZONTAL_DISTANCE;
-                            rowStart += plaqueWidth;
-                            if (width.addAndGet(-plaqueWidth) <= 0) break;
-                        }
-                        offsetY += maxRowHeight + PLAQUE_VERTICAL_DISTANCE;
-                    }
-                    poseStack.popPose();
+            if (dispatcher.camera != null && dispatcher.camera.getEntity() != null && shouldShowName(livingEntity, dispatcher)) {
+                poseStack.pushPose();
+                int offsetY = "deadmau5".equals(content.get().getString()) ? -13 : -3;
+                poseStack.translate(0.0, livingEntity.getBbHeight() + 0.5, 0.0);
+                poseStack.mulPose(dispatcher.cameraOrientation());
+                float plaqueScale = (float) MobPlaques.CONFIG.get(ClientConfig.class).plaqueScale;
+                if (MobPlaques.CONFIG.get(ClientConfig.class).scaleWithDistance) {
+                    double distanceSqr = dispatcher.distanceToSqr(livingEntity);
+                    float pickRange = minecraft.gameMode.getPickRange();
+                    double scaleRatio = Mth.clamp((distanceSqr - Math.pow(pickRange / 2.0, 2.0)) / (Math.pow(pickRange * 2.0, 2.0) / 2.0), 0.0, 2.0);
+                    plaqueScale *= 1.0 + scaleRatio;
                 }
+                float scale = 0.025F * plaqueScale;
+                poseStack.scale(-scale, -scale, scale);
+                offsetY -= MobPlaques.CONFIG.get(ClientConfig.class).heightOffset * (0.5F / plaqueScale);
+                if (MobPlaques.CONFIG.get(ClientConfig.class).renderBelowNameTag) {
+                    offsetY += 23 * (0.5F / plaqueScale);
+                } else {
+                    offsetY -= (getPlaquesHeight(minecraft.font, livingEntity) + PLAQUE_VERTICAL_DISTANCE) * (0.5F / plaqueScale);
+                }
+                boolean plaqueBackground = MobPlaques.CONFIG.get(ClientConfig.class).plaqueBackground;
+                Iterator<MobPlaqueRenderer> iterator = PLAQUE_RENDERERS.values().iterator();
+                List<MutableInt> widths = getPlaquesWidths(minecraft.font, livingEntity);
+                for (MutableInt width : widths) {
+                    int rowStart = -width.intValue() / 2;
+                    int maxRowHeight = 0;
+                    while (iterator.hasNext()) {
+                        MobPlaqueRenderer plaqueRenderer = iterator.next();
+                        if (!plaqueRenderer.wantsToRender(livingEntity)) continue;
+                        int plaqueWidth = plaqueRenderer.getWidth(minecraft.font, livingEntity);
+                        // light value stolen from Neat mod by Vazkii, probably shows up elsewhere in vanilla though
+                        // also kinda there to hide the fact that icons always render with full brightness, not sure what to do about that otherwise lol
+                        plaqueRenderer.render(poseStack, multiBufferSource, 0xF000F0, rowStart + plaqueWidth / 2, offsetY, plaqueBackground, minecraft.font, livingEntity);
+                        maxRowHeight = Math.max(plaqueRenderer.getHeight(), maxRowHeight);
+                        plaqueWidth += PLAQUE_HORIZONTAL_DISTANCE;
+                        rowStart += plaqueWidth;
+                        if (width.addAndGet(-plaqueWidth) <= 0) break;
+                    }
+                    offsetY += maxRowHeight + PLAQUE_VERTICAL_DISTANCE;
+                }
+                poseStack.popPose();
             }
         }
         return EventResult.PASS;
@@ -142,20 +139,6 @@ public class MobPlaqueHandler {
             }
         }
         return false;
-    }
-
-    private static boolean isMobUnobstructed(Level level, LivingEntity cameraEntity, LivingEntity targetEntity, float partialTicks) {
-        if (MobPlaques.CONFIG.get(ClientConfig.class).behindWalls) {
-            return true;
-        }
-        // use this instead of LivingEntity::hasLineOfSight so we can look through transparent blocks like glass
-        return pick(level, cameraEntity, targetEntity, partialTicks).getType() == HitResult.Type.MISS;
-    }
-
-    private static HitResult pick(Level level, LivingEntity cameraEntity, LivingEntity targetEntity, float partialTicks) {
-        Vec3 vec3 = cameraEntity.getEyePosition(partialTicks);
-        Vec3 vec32 = targetEntity.getEyePosition(partialTicks);
-        return level.clip(new ClipContext(vec3, vec32, ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, cameraEntity));
     }
 
     private static boolean shouldShowName(LivingEntity entity, EntityRenderDispatcher entityRenderDispatcher) {

@@ -7,12 +7,15 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraftforge.common.ForgeConfigSpec;
 
 public abstract class TransitionPlaqueRenderer extends MobPlaqueRenderer {
+    private final int defaultHighColor;
+    private final int defaultLowColor;
     private boolean shiftColors;
-    private boolean relativeValue;
+    private PlaqueValue plaqueValue;
 
-    protected abstract int getHighColor();
-
-    protected abstract int getLowColor();
+    protected TransitionPlaqueRenderer(int defaultHighColor, int defaultLowColor) {
+        this.defaultHighColor = defaultHighColor;
+        this.defaultLowColor = defaultLowColor;
+    }
 
     public abstract int getMaxValue(LivingEntity entity);
 
@@ -22,10 +25,11 @@ public abstract class TransitionPlaqueRenderer extends MobPlaqueRenderer {
 
     @Override
     protected Component getComponent(LivingEntity entity) {
-        if (!this.relativeValue) {
-            return super.getComponent(entity);
-        }
-        return Component.literal((int) (this.getValuePercentage(entity) * 100.0F) + "%");
+        return switch (this.plaqueValue) {
+            case DEFAULT -> super.getComponent(entity);
+            case INCLUDE_MAX -> Component.literal(this.getValue(entity) + "/" + this.getMaxValue(entity));
+            case RELATIVE_PERCENTAGE -> Component.literal((int) (this.getValuePercentage(entity) * 100.0F) + "%");
+        };
     }
 
     @Override
@@ -33,7 +37,7 @@ public abstract class TransitionPlaqueRenderer extends MobPlaqueRenderer {
         if (!this.shiftColors) {
             return super.getColor(entity);
         }
-        return getTransitionedColor(this.getHighColor(), this.getLowColor(), this.getValuePercentage(entity));
+        return getTransitionedColor(this.defaultHighColor, this.defaultLowColor, this.getValuePercentage(entity));
     }
 
     private float getValuePercentage(LivingEntity entity) {
@@ -43,8 +47,8 @@ public abstract class TransitionPlaqueRenderer extends MobPlaqueRenderer {
     @Override
     public void setupConfig(ForgeConfigSpec.Builder builder, ValueCallback callback) {
         super.setupConfig(builder, callback);
-        callback.accept(builder.comment("Transition text colors depending on current percentage.").define("shift_colors", true), v -> this.shiftColors = v);
-        callback.accept(builder.comment("Show current amount as percentage instead of as absolute value.").define("relative_value", false), v -> this.relativeValue = v);
+        callback.accept(builder.comment("Transition text colors depending on current percentage.").define("shift_colors", false), v -> this.shiftColors = v);
+        callback.accept(builder.comment("Show current amount either as percentage or as absolute value.").defineEnum("plaque_value", PlaqueValue.RELATIVE_PERCENTAGE), v -> this.plaqueValue = v);
     }
 
     private static int getTransitionedColor(int startColor, int endColor, float transition) {
@@ -62,5 +66,9 @@ public abstract class TransitionPlaqueRenderer extends MobPlaqueRenderer {
         color |= colorG << 8;
         color |= colorB << 0;
         return color;
+    }
+
+    private enum PlaqueValue {
+        DEFAULT, INCLUDE_MAX, RELATIVE_PERCENTAGE
     }
 }

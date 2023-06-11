@@ -44,7 +44,9 @@ public class ClientConfig implements ConfigCore {
     @Config(category = KEY_GENERAL_CATEGORY, description = "Render mob plaques below the mob's name tag instead of above.")
     public boolean renderBelowNameTag = false;
     @Config(category = KEY_GENERAL_CATEGORY, description = "Show a black background box behind plaques. Disabled by default as it doesn't work with shaders.")
-    public boolean plaqueBackground = false;
+    public boolean plaqueBackground = true;
+//    @Config(category = KEY_GENERAL_CATEGORY, description = "Always render plaques with full brightness to be most visible, ignoring local lighting conditions.")
+//    public boolean renderFulbright = true;
     @Config(category = KEY_GENERAL_CATEGORY, description = "Height offset from default position.")
     public int heightOffset = 0;
     @Config(category = KEY_GENERAL_CATEGORY, description = "Distance to the mob at which plaques will still be visible. The distance is halved when the mob is crouching.")
