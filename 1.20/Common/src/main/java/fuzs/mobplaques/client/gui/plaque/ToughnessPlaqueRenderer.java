@@ -7,7 +7,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 
 public class ToughnessPlaqueRenderer extends MobPlaqueRenderer {
-    private static final ResourceLocation TOUGHNESS_ICONS_LOCATION = new ResourceLocation(MobPlaques.MOD_ID, "textures/gui/icons.png");
+    public static final ResourceLocation TOUGHNESS_ICONS_LOCATION = MobPlaques.id("textures/gui/icons.png");
 
     @Override
     public int getValue(LivingEntity entity) {

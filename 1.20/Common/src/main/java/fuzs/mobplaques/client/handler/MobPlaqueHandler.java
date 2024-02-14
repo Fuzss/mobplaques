@@ -18,6 +18,10 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Team;
 import org.apache.commons.lang3.mutable.MutableInt;
 
@@ -25,58 +29,60 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class MobPlaqueHandler {
     private static final int PLAQUE_HORIZONTAL_DISTANCE = 2;
     private static final int PLAQUE_VERTICAL_DISTANCE = 2;
-    public static final Map<ResourceLocation, MobPlaqueRenderer> PLAQUE_RENDERERS = new LinkedHashMap<String, MobPlaqueRenderer>() {{
-        this.put("health", new HealthPlaqueRenderer());
-        this.put("air", new AirPlaqueRenderer());
-        this.put("armor", new ArmorPlaqueRenderer());
-        this.put("toughness", new ToughnessPlaqueRenderer());
-    }}.entrySet().stream().collect(Collectors.toMap(e -> new ResourceLocation(MobPlaques.MOD_ID, e.getKey()), Map.Entry::getValue, (o1, o2) -> o1, LinkedHashMap::new));
+    public static final Map<ResourceLocation, MobPlaqueRenderer> PLAQUE_RENDERERS = new LinkedHashMap<>();
+
+    static {
+        registerPlaqueRenderer("health", new HealthPlaqueRenderer());
+        registerPlaqueRenderer("air", new AirPlaqueRenderer());
+        registerPlaqueRenderer("armor", new ArmorPlaqueRenderer());
+        registerPlaqueRenderer("toughness", new ToughnessPlaqueRenderer());
+    }
+
+    private static void registerPlaqueRenderer(String identifier, MobPlaqueRenderer mobPlaqueRenderer) {
+        PLAQUE_RENDERERS.put(MobPlaques.id(identifier), mobPlaqueRenderer);
+    }
 
     @SuppressWarnings("ConstantValue")
     public static EventResult onRenderNameTag(Entity entity, DefaultedValue<Component> content, EntityRenderer<?> entityRenderer, PoseStack poseStack, MultiBufferSource multiBufferSource, int packedLight, float partialTick) {
         if (!MobPlaques.CONFIG.get(ClientConfig.class).allowRendering.get()) return EventResult.PASS;
-        if (entity instanceof LivingEntity livingEntity && canMobRenderPlaques(livingEntity)) {
+        if (entity instanceof LivingEntity targetEntity && canMobRenderPlaques(targetEntity)) {
             Minecraft minecraft = Minecraft.getInstance();
             EntityRenderDispatcher dispatcher = minecraft.getEntityRenderDispatcher();
             // other mods might be rendering this mob without a level in some menu, so camera is null then
-            if (dispatcher.camera != null && dispatcher.camera.getEntity() != null && shouldShowName(livingEntity, dispatcher)) {
+            if (dispatcher.camera != null && dispatcher.camera.getEntity() instanceof LivingEntity cameraEntity && shouldShowName(minecraft.level, cameraEntity, targetEntity, partialTick, dispatcher)) {
                 poseStack.pushPose();
                 int offsetY = "deadmau5".equals(content.get().getString()) ? -13 : -3;
-                poseStack.translate(0.0, livingEntity.getBbHeight() + 0.5, 0.0);
+                poseStack.translate(0.0, targetEntity.getBbHeight() + 0.5, 0.0);
                 poseStack.mulPose(dispatcher.cameraOrientation());
                 float plaqueScale = (float) MobPlaques.CONFIG.get(ClientConfig.class).plaqueScale;
                 if (MobPlaques.CONFIG.get(ClientConfig.class).scaleWithDistance) {
-                    double distanceSqr = dispatcher.distanceToSqr(livingEntity);
+                    double distanceSqr = dispatcher.distanceToSqr(targetEntity);
                     float pickRange = minecraft.gameMode.getPickRange();
                     double scaleRatio = Mth.clamp((distanceSqr - Math.pow(pickRange / 2.0, 2.0)) / (Math.pow(pickRange * 2.0, 2.0) / 2.0), 0.0, 2.0);
-                    plaqueScale *= 1.0 + scaleRatio;
+                    plaqueScale *= (float) (1.0 + scaleRatio);
                 }
                 float scale = 0.025F * plaqueScale;
                 poseStack.scale(-scale, -scale, scale);
-                offsetY -= MobPlaques.CONFIG.get(ClientConfig.class).heightOffset * (0.5F / plaqueScale);
+                offsetY -= (int) (MobPlaques.CONFIG.get(ClientConfig.class).heightOffset * (0.5F / plaqueScale));
                 if (MobPlaques.CONFIG.get(ClientConfig.class).renderBelowNameTag) {
-                    offsetY += 23 * (0.5F / plaqueScale);
+                    offsetY += (int) (23 * (0.5F / plaqueScale));
                 } else {
-                    offsetY -= (getPlaquesHeight(minecraft.font, livingEntity) + PLAQUE_VERTICAL_DISTANCE) * (0.5F / plaqueScale);
+                    offsetY -= (int) ((getPlaquesHeight(minecraft.font, targetEntity) + PLAQUE_VERTICAL_DISTANCE) * (0.5F / plaqueScale));
                 }
-                boolean plaqueBackground = MobPlaques.CONFIG.get(ClientConfig.class).plaqueBackground;
                 Iterator<MobPlaqueRenderer> iterator = PLAQUE_RENDERERS.values().iterator();
-                List<MutableInt> widths = getPlaquesWidths(minecraft.font, livingEntity);
+                List<MutableInt> widths = getPlaquesWidths(minecraft.font, targetEntity);
                 for (MutableInt width : widths) {
                     int rowStart = -width.intValue() / 2;
                     int maxRowHeight = 0;
                     while (iterator.hasNext()) {
                         MobPlaqueRenderer plaqueRenderer = iterator.next();
-                        if (!plaqueRenderer.wantsToRender(livingEntity)) continue;
-                        int plaqueWidth = plaqueRenderer.getWidth(minecraft.font, livingEntity);
-                        // light value stolen from Neat mod by Vazkii, probably shows up elsewhere in vanilla though
-                        // also kinda there to hide the fact that icons always render with full brightness, not sure what to do about that otherwise lol
-                        plaqueRenderer.render(poseStack, multiBufferSource, 0xF000F0, rowStart + plaqueWidth / 2, offsetY, plaqueBackground, minecraft.font, livingEntity);
+                        if (!plaqueRenderer.wantsToRender(targetEntity)) continue;
+                        int plaqueWidth = plaqueRenderer.getWidth(minecraft.font, targetEntity);
+                        plaqueRenderer.render(poseStack, multiBufferSource, packedLight, rowStart + plaqueWidth / 2, offsetY, minecraft.font, targetEntity);
                         maxRowHeight = Math.max(plaqueRenderer.getHeight(), maxRowHeight);
                         plaqueWidth += PLAQUE_HORIZONTAL_DISTANCE;
                         rowStart += plaqueWidth;
@@ -141,39 +147,48 @@ public class MobPlaqueHandler {
         return false;
     }
 
-    private static boolean shouldShowName(LivingEntity entity, EntityRenderDispatcher entityRenderDispatcher) {
-        if (MobPlaques.CONFIG.get(ClientConfig.class).pickedEntity && entity != entityRenderDispatcher.crosshairPickEntity) {
-            return false;
-        }
-        double d0 = entityRenderDispatcher.distanceToSqr(entity);
-        int maxRenderDistance = MobPlaques.CONFIG.get(ClientConfig.class).maxRenderDistance;
-        float f = entity.isDiscrete() ? maxRenderDistance / 2.0F : maxRenderDistance;
-        if (d0 >= (double) (f * f)) {
+    private static boolean shouldShowName(Level level, LivingEntity cameraEntity, LivingEntity targetEntity, float partialTicks, EntityRenderDispatcher entityRenderDispatcher) {
+        if (MobPlaques.CONFIG.get(ClientConfig.class).pickedEntity && targetEntity != entityRenderDispatcher.crosshairPickEntity) {
             return false;
         } else {
-            Minecraft minecraft = Minecraft.getInstance();
-            Player player = minecraft.player;
-            boolean invisibleToPlayer = !entity.isInvisibleTo(player);
-            if (entity != player) {
-                Team team = entity.getTeam();
-                Team team1 = player.getTeam();
+            // run this earlier than vanilla to avoid raytracing if not necessary
+            if (!Minecraft.renderNames() || targetEntity == cameraEntity || targetEntity.isVehicle()) {
+                return false;
+            } else if (entityRenderDispatcher.distanceToSqr(targetEntity) >= getMaxRenderDistanceSqr(level, cameraEntity, targetEntity, partialTicks)) {
+                return false;
+            } else {
+                Team team = targetEntity.getTeam();
+                Team otherTeam = cameraEntity.getTeam();
+                boolean visibleToCamera = !(cameraEntity instanceof Player player) || !targetEntity.isInvisibleTo(player);
                 if (team != null) {
-                    Team.Visibility team$visibility = team.getNameTagVisibility();
-                    switch (team$visibility) {
-                        case ALWAYS:
-                            return invisibleToPlayer;
-                        case NEVER:
-                            return false;
-                        case HIDE_FOR_OTHER_TEAMS:
-                            return team1 == null ? invisibleToPlayer : team.isAlliedTo(team1) && (team.canSeeFriendlyInvisibles() || invisibleToPlayer);
-                        case HIDE_FOR_OWN_TEAM:
-                            return team1 == null ? invisibleToPlayer : !team.isAlliedTo(team1) && invisibleToPlayer;
-                        default:
-                            return true;
-                    }
+                    return switch (team.getNameTagVisibility()) {
+                        case ALWAYS -> visibleToCamera;
+                        case NEVER -> false;
+                        case HIDE_FOR_OTHER_TEAMS -> otherTeam == null ?
+                                visibleToCamera :
+                                team.isAlliedTo(otherTeam) && (team.canSeeFriendlyInvisibles() || visibleToCamera);
+                        case HIDE_FOR_OWN_TEAM ->
+                                otherTeam == null ? visibleToCamera : !team.isAlliedTo(otherTeam) && visibleToCamera;
+                    };
                 }
+                return visibleToCamera;
             }
-            return Minecraft.renderNames() && entity != minecraft.getCameraEntity() && invisibleToPlayer && !entity.isVehicle();
         }
+    }
+
+    private static int getMaxRenderDistanceSqr(Level level, LivingEntity cameraEntity, LivingEntity targetEntity, float partialTicks) {
+        int maxRenderDistance = MobPlaques.CONFIG.get(ClientConfig.class).maxRenderDistance;
+        if (targetEntity.isDiscrete()) maxRenderDistance /= 2;
+        // use this instead of LivingEntity::hasLineOfSight, so we can look through transparent blocks like glass
+        if (pick(level, cameraEntity, targetEntity, partialTicks).getType() != HitResult.Type.MISS) {
+            maxRenderDistance /= 4;
+        }
+        return maxRenderDistance * maxRenderDistance;
+    }
+
+    private static HitResult pick(Level level, LivingEntity cameraEntity, LivingEntity targetEntity, float partialTicks) {
+        Vec3 vec3 = cameraEntity.getEyePosition(partialTicks);
+        Vec3 vec32 = targetEntity.getEyePosition(partialTicks);
+        return level.clip(new ClipContext(vec3, vec32, ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, cameraEntity));
     }
 }

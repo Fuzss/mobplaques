@@ -8,22 +8,13 @@ import fuzs.puzzleslib.api.config.v3.Config;
 import fuzs.puzzleslib.api.config.v3.ConfigCore;
 import fuzs.puzzleslib.api.config.v3.ValueCallback;
 import fuzs.puzzleslib.api.config.v3.serialization.ConfigDataSet;
-import fuzs.puzzleslib.api.core.v1.CommonAbstractions;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.OwnableEntity;
-import net.minecraft.world.entity.Saddleable;
-import net.minecraft.world.entity.animal.horse.AbstractHorse;
-import net.minecraft.world.entity.monster.Monster;
-import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.common.ForgeConfigSpec;
 
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -45,15 +36,15 @@ public class ClientConfig implements ConfigCore {
     public boolean renderBelowNameTag = false;
     @Config(category = KEY_GENERAL_CATEGORY, description = "Show a black background box behind plaques. Disabled by default as it doesn't work with shaders.")
     public boolean plaqueBackground = true;
-//    @Config(category = KEY_GENERAL_CATEGORY, description = "Always render plaques with full brightness to be most visible, ignoring local lighting conditions.")
-//    public boolean renderFulbright = true;
+    @Config(category = KEY_GENERAL_CATEGORY, description = "Always render plaques with full brightness to be most visible, ignoring local lighting conditions.")
+    public FullBrightnessRendering fullBrightness = FullBrightnessRendering.UNOBSTRUCTED;
     @Config(category = KEY_GENERAL_CATEGORY, description = "Height offset from default position.")
     public int heightOffset = 0;
     @Config(category = KEY_GENERAL_CATEGORY, description = "Distance to the mob at which plaques will still be visible. The distance is halved when the mob is crouching.")
     @Config.IntRange(min = 0)
-    public int maxRenderDistance = 64;
-    @Config(category = KEY_GENERAL_CATEGORY, description = "Show plaques from mobs obstructed by walls the player cannot see through.")
-    public boolean behindWalls = false;
+    public int maxRenderDistance = 48;
+    @Config(category = KEY_GENERAL_CATEGORY, description = "Show plaques from mobs obstructed by walls the player cannot see through, similar to the nameplates of other players.")
+    public boolean behindWalls = true;
     @Config(category = KEY_GENERAL_CATEGORY, description = "Dynamically increase plaque size the further away the camera is to simplify readability.")
     public boolean scaleWithDistance = true;
     @Config(category = KEY_GENERAL_CATEGORY, name = "mob_blacklist", description = {"Entities blacklisted from showing any plaques.", ConfigDataSet.CONFIG_DESCRIPTION})
@@ -72,7 +63,7 @@ public class ClientConfig implements ConfigCore {
     @Override
     public void addToBuilder(ForgeConfigSpec.Builder builder, ValueCallback callback) {
         builder.push(KEY_GENERAL_CATEGORY);
-        // we need this here to be able to set a value
+        // we need this here to be able to set a value from pressing the key
         this.allowRendering = builder.comment("Are mob plaques enabled, toggleable in-game using the 'J' key by default.").define("allow_rendering", true);
         builder.pop();
         for (Map.Entry<ResourceLocation, MobPlaqueRenderer> entry : MobPlaqueHandler.PLAQUE_RENDERERS.entrySet()) {
@@ -90,58 +81,7 @@ public class ClientConfig implements ConfigCore {
         this.allowedMobSelectors = this.allowedMobSelectorsRaw.stream().map(MobPlaquesSelector::valueOf).collect(ImmutableList.toImmutableList());
     }
 
-    public enum MobPlaquesSelector {
-        ALL {
-
-            @Override
-            public boolean canMobRenderPlaque(LivingEntity entity) {
-                return true;
-            }
-        },
-        TAMED {
-
-            @Override
-            public boolean canMobRenderPlaque(LivingEntity entity) {
-                return entity instanceof OwnableEntity tamableAnimal && tamableAnimal.getOwnerUUID() != null || entity instanceof AbstractHorse abstractHorse && abstractHorse.getOwnerUUID() != null;
-            }
-        },
-        TAMED_ONLY_OWNER {
-
-            @Override
-            public boolean canMobRenderPlaque(LivingEntity entity) {
-                UUID owner = Minecraft.getInstance().player.getUUID();
-                return entity instanceof OwnableEntity tamableAnimal && owner.equals(tamableAnimal.getOwnerUUID()) || entity instanceof AbstractHorse abstractHorse && owner.equals(abstractHorse.getOwnerUUID());
-            }
-        },
-        PLAYER {
-
-            @Override
-            public boolean canMobRenderPlaque(LivingEntity entity) {
-                return entity instanceof Player;
-            }
-        },
-        MONSTER {
-
-            @Override
-            public boolean canMobRenderPlaque(LivingEntity entity) {
-                return entity instanceof Monster || !entity.getType().getCategory().isFriendly();
-            }
-        },
-        BOSS {
-
-            @Override
-            public boolean canMobRenderPlaque(LivingEntity entity) {
-                return CommonAbstractions.INSTANCE.isBossMob(entity.getType());
-            }
-        },
-        MOUNT {
-
-            @Override
-            public boolean canMobRenderPlaque(LivingEntity entity) {
-                return entity instanceof Saddleable saddleable && saddleable.isSaddleable();
-            }
-        };
-
-        public abstract boolean canMobRenderPlaque(LivingEntity entity);
+    public enum FullBrightnessRendering {
+        ALWAYS, UNOBSTRUCTED, NEVER
     }
 }

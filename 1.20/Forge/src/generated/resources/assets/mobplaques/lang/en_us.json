@@ -1,4 +1,5 @@
 {
+  "key.categories.mobplaques": "Mob Plaques",
   "key.togglePlaques": "Toggle Mob Plaques",
-  "key.togglePlaques.message": "Mob Plaques are set to: %s"
+  "key.togglePlaques.message": "Set Mob Plaques to: %s"
 }

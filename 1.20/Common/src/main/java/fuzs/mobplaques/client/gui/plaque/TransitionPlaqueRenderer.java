@@ -26,9 +26,9 @@ public abstract class TransitionPlaqueRenderer extends MobPlaqueRenderer {
     @Override
     protected Component getComponent(LivingEntity entity) {
         return switch (this.plaqueValue) {
-            case DEFAULT -> super.getComponent(entity);
-            case INCLUDE_MAX -> Component.literal(this.getValue(entity) + "/" + this.getMaxValue(entity));
-            case RELATIVE_PERCENTAGE -> Component.literal((int) (this.getValuePercentage(entity) * 100.0F) + "%");
+            case ABSOLUTE -> super.getComponent(entity);
+            case ABSOLUTE_WITH_MAX -> Component.literal(this.getValue(entity) + "/" + this.getMaxValue(entity));
+            case RELATIVE -> Component.literal((int) (this.getValuePercentage(entity) * 100.0F) + "%");
         };
     }
 
@@ -48,7 +48,7 @@ public abstract class TransitionPlaqueRenderer extends MobPlaqueRenderer {
     public void setupConfig(ForgeConfigSpec.Builder builder, ValueCallback callback) {
         super.setupConfig(builder, callback);
         callback.accept(builder.comment("Transition text colors depending on current percentage.").define("shift_colors", false), v -> this.shiftColors = v);
-        callback.accept(builder.comment("Show current amount either as percentage or as absolute value.").defineEnum("plaque_value", PlaqueValue.RELATIVE_PERCENTAGE), v -> this.plaqueValue = v);
+        callback.accept(builder.comment("Show current amount either as percentage or as absolute value.").defineEnum("plaque_value", PlaqueValue.RELATIVE), v -> this.plaqueValue = v);
     }
 
     private static int getTransitionedColor(int startColor, int endColor, float transition) {
@@ -69,6 +69,6 @@ public abstract class TransitionPlaqueRenderer extends MobPlaqueRenderer {
     }
 
     private enum PlaqueValue {
-        DEFAULT, INCLUDE_MAX, RELATIVE_PERCENTAGE
+        ABSOLUTE, ABSOLUTE_WITH_MAX, RELATIVE
     }
 }
