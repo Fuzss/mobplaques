@@ -2,9 +2,10 @@ package fuzs.mobplaques.client.gui.plaque;
 
 import fuzs.puzzleslib.api.config.v3.ValueCallback;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 public abstract class TransitionPlaqueRenderer extends MobPlaqueRenderer {
     private final int defaultHighColor;
@@ -36,8 +37,10 @@ public abstract class TransitionPlaqueRenderer extends MobPlaqueRenderer {
     protected int getColor(LivingEntity entity) {
         if (!this.shiftColors) {
             return super.getColor(entity);
+        } else {
+            float transition = this.getValuePercentage(entity);
+            return packTransitionedColor(this.defaultHighColor, this.defaultLowColor, transition);
         }
-        return getTransitionedColor(this.defaultHighColor, this.defaultLowColor, this.getValuePercentage(entity));
     }
 
     private float getValuePercentage(LivingEntity entity) {
@@ -45,27 +48,23 @@ public abstract class TransitionPlaqueRenderer extends MobPlaqueRenderer {
     }
 
     @Override
-    public void setupConfig(ForgeConfigSpec.Builder builder, ValueCallback callback) {
+    public void setupConfig(ModConfigSpec.Builder builder, ValueCallback callback) {
         super.setupConfig(builder, callback);
         callback.accept(builder.comment("Transition text colors depending on current percentage.").define("shift_colors", false), v -> this.shiftColors = v);
         callback.accept(builder.comment("Show current amount either as percentage or as absolute value.").defineEnum("plaque_value", PlaqueValue.RELATIVE), v -> this.plaqueValue = v);
     }
 
-    private static int getTransitionedColor(int startColor, int endColor, float transition) {
-        int startR = startColor >> 16 & 0xFF;
-        int startG = startColor >> 8 & 0xFF;
-        int startB = startColor >> 0 & 0xFF;
-        int endR = endColor >> 16 & 0xFF;
-        int endG = endColor >> 8 & 0xFF;
-        int endB = endColor >> 0 & 0xFF;
+    public static int packTransitionedColor(int startColor, int endColor, float transition) {
+        int startR = FastColor.ARGB32.red(startColor);
+        int startG = FastColor.ARGB32.green(startColor);
+        int startB = FastColor.ARGB32.blue(startColor);
+        int endR = FastColor.ARGB32.red(endColor);
+        int endG = FastColor.ARGB32.green(endColor);
+        int endB = FastColor.ARGB32.blue(endColor);
         int colorR = endR + (int) ((startR - endR) * transition);
         int colorG = endG + (int) ((startG - endG) * transition);
         int colorB = endB + (int) ((startB - endB) * transition);
-        int color = 0;
-        color |= colorR << 16;
-        color |= colorG << 8;
-        color |= colorB << 0;
-        return color;
+        return FastColor.ARGB32.color(0, colorR, colorG, colorB);
     }
 
     private enum PlaqueValue {

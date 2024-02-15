@@ -10,22 +10,21 @@ import fuzs.mobplaques.config.ClientConfig;
 import fuzs.puzzleslib.api.config.v3.ValueCallback;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiSpriteManager;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 import org.joml.Matrix4f;
 
 public abstract class MobPlaqueRenderer {
-    protected static final ResourceLocation GUI_ICONS_LOCATION = new ResourceLocation("textures/gui/icons.png");
     protected static final int PLAQUE_HEIGHT = 11;
     protected static final int BACKGROUND_BORDER_SIZE = 1;
     protected static final int ICON_SIZE = 9;
     protected static final int TEXT_ICON_GAP = 2;
-    /**
-     * Light value stolen from Neat mod by Vazkii, probably shows up elsewhere in vanilla though.
-     */
+    // from Neat mod by Vazkii
     protected static final int FULL_BRIGHT_PACKED_LIGHT = 0xF000F0;
 
     protected boolean allowRendering;
@@ -96,31 +95,27 @@ public abstract class MobPlaqueRenderer {
         posX += this.getWidth(font, entity) / 2 - BACKGROUND_BORDER_SIZE - ICON_SIZE;
         posY += BACKGROUND_BORDER_SIZE;
         this.renderIconBackground(poseStack, bufferSource, packedLight, posX, posY, entity);
-        this.innerRenderIcon(poseStack, bufferSource, packedLight, posX, posY, 0.0F, this.getIconX(entity), this.getIconY(entity));
+        this.innerRenderIcon(poseStack, bufferSource, packedLight, posX, posY, 0.0F, this.getSprite(entity));
     }
 
-    protected void innerRenderIcon(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int posX, int posY, float zOffset, int textureX, int textureY) {
+    protected void innerRenderIcon(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int posX, int posY, float zOffset, ResourceLocation resourceLocation) {
         boolean behindWalls = MobPlaques.CONFIG.get(ClientConfig.class).behindWalls;
-        VertexConsumer vertexConsumer = bufferSource.getBuffer((behindWalls ? ModRenderType.ICON_SEE_THROUGH : ModRenderType.ICON).apply(this.getTextureSheet()));
-        GuiBlitHelper.blit(poseStack, vertexConsumer, FULL_BRIGHT_PACKED_LIGHT, posX, posY, zOffset, textureX, textureY, ICON_SIZE, ICON_SIZE, 256, 256, 0x20FFFFFF);
+        GuiSpriteManager guiSprites = Minecraft.getInstance().getGuiSprites();
+        TextureAtlasSprite sprite = guiSprites.getSprite(resourceLocation);
+        VertexConsumer vertexConsumer = bufferSource.getBuffer((behindWalls ? ModRenderType.ICON_SEE_THROUGH : ModRenderType.ICON).apply(sprite.atlasLocation()));
+        GuiBlitHelper.blitSprite(poseStack, vertexConsumer, FULL_BRIGHT_PACKED_LIGHT, posX, posY, zOffset, sprite, ICON_SIZE, ICON_SIZE, 0x20FFFFFF);
         ClientConfig.FullBrightnessRendering fullBrightness = MobPlaques.CONFIG.get(ClientConfig.class).fullBrightness;
-        vertexConsumer = bufferSource.getBuffer((behindWalls && fullBrightness == ClientConfig.FullBrightnessRendering.ALWAYS ? ModRenderType.ICON_SEE_THROUGH : ModRenderType.ICON).apply(this.getTextureSheet()));
-        GuiBlitHelper.blit(poseStack, vertexConsumer, fullBrightness != ClientConfig.FullBrightnessRendering.NEVER ? FULL_BRIGHT_PACKED_LIGHT : packedLight, posX, posY, zOffset, textureX, textureY, ICON_SIZE, ICON_SIZE, 256, 256, -1);
+        vertexConsumer = bufferSource.getBuffer((behindWalls && fullBrightness == ClientConfig.FullBrightnessRendering.ALWAYS ? ModRenderType.ICON_SEE_THROUGH : ModRenderType.ICON).apply(sprite.atlasLocation()));
+        GuiBlitHelper.blitSprite(poseStack, vertexConsumer, fullBrightness != ClientConfig.FullBrightnessRendering.NEVER ? FULL_BRIGHT_PACKED_LIGHT : packedLight, posX, posY, zOffset, sprite, ICON_SIZE, ICON_SIZE, -1);
     }
 
     protected void renderIconBackground(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int posX, int posY, LivingEntity entity) {
         // NO-OP
     }
     
-    protected abstract int getIconX(LivingEntity entity);
+    protected abstract ResourceLocation getSprite(LivingEntity entity);
 
-    protected abstract int getIconY(LivingEntity entity);
-
-    protected ResourceLocation getTextureSheet() {
-        return GUI_ICONS_LOCATION;
-    }
-
-    public void setupConfig(ForgeConfigSpec.Builder builder, ValueCallback callback) {
+    public void setupConfig(ModConfigSpec.Builder builder, ValueCallback callback) {
         callback.accept(builder.comment("Allow for rendering this type of plaque.").define("allow_rendering", true), v -> this.allowRendering = v);
     }
 }

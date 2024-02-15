@@ -1,13 +1,18 @@
 package fuzs.mobplaques.client.gui.plaque;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Saddleable;
+import net.minecraft.world.entity.player.Player;
 
 public class HealthPlaqueRenderer extends TransitionPlaqueRenderer {
+    private static final ResourceLocation HEART_VEHICLE_CONTAINER_SPRITE = new ResourceLocation("hud/heart/vehicle_container");
+    private static final ResourceLocation HEART_VEHICLE_FULL_SPRITE = new ResourceLocation("hud/heart/vehicle_full");
 
     public HealthPlaqueRenderer() {
         super(0x1EB100, 0xED230D);
@@ -34,68 +39,36 @@ public class HealthPlaqueRenderer extends TransitionPlaqueRenderer {
 
     @Override
     protected void renderIconBackground(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int posX, int posY, LivingEntity entity) {
-        this.innerRenderIcon(poseStack, bufferSource, packedLight, posX, posY, 0.01F, HeartType.CONTAINER.getTextureX(), HeartType.CONTAINER.getTextureY());
+        this.innerRenderIcon(poseStack, bufferSource, packedLight, posX, posY, 0.01F, getContainerSprite(entity));
     }
 
     @Override
-    protected int getIconX(LivingEntity entity) {
-        return HeartType.selectHeartType(entity).getTextureX();
+    protected ResourceLocation getSprite(LivingEntity entity) {
+        return getFullSprite(entity);
     }
 
-    @Override
-    protected int getIconY(LivingEntity entity) {
-        return HeartType.selectHeartType(entity).getTextureY();
+    public static ResourceLocation getContainerSprite(LivingEntity entity) {
+        return isMount(entity) ? HEART_VEHICLE_CONTAINER_SPRITE : Gui.HeartType.CONTAINER.getSprite(entity instanceof Player player && player.level().getLevelData().isHardcore(), false, false);
     }
 
-    private enum HeartType {
-        CONTAINER(0),
-        NORMAL(2),
-        POISONED(4),
-        WITHERED(6),
-        ABSORBING(8),
-        FROZEN(9),
-        MOUNT(4, 1, false);
+    public static ResourceLocation getFullSprite(LivingEntity entity) {
+        return isMount(entity) ? HEART_VEHICLE_FULL_SPRITE : forEntity(entity).getSprite(false, false, false);
+    }
 
-        private final int indexX;
-        private final int indexY;
-        private final boolean hardcoreVariant;
+    private static boolean isMount(LivingEntity entity) {
+        return entity instanceof Saddleable saddleable && saddleable.isSaddled();
+    }
 
-        HeartType(int indexX) {
-            this(indexX, 0, true);
+    public static Gui.HeartType forEntity(LivingEntity entity) {
+        if (entity.hasEffect(MobEffects.POISON)) {
+            return Gui.HeartType.POISIONED;
+        } else if (entity.hasEffect(MobEffects.WITHER)) {
+            return Gui.HeartType.WITHERED;
+        } else if (entity.isFullyFrozen()) {
+            return Gui.HeartType.FROZEN;
+        } else if (entity.getAbsorptionAmount() > 0.0F) {
+            return Gui.HeartType.ABSORBING;
         }
-
-        HeartType(int indexX, int indexY, boolean hardcoreVariant) {
-            this.indexX = indexX;
-            this.indexY = indexY;
-            this.hardcoreVariant = hardcoreVariant;
-        }
-
-        public int getTextureX() {
-            return 16 + this.indexX * 18;
-        }
-
-        public int getTextureY() {
-            return this.getIndexY(false) * 9;
-        }
-
-        public int getIndexY(boolean hardcore) {
-            if (hardcore && this.hardcoreVariant) {
-                return 5;
-            }
-            return this.indexY;
-        }
-
-        public static HeartType selectHeartType(LivingEntity entity) {
-            if (entity.hasEffect(MobEffects.POISON)) {
-                return POISONED;
-            } else if (entity.hasEffect(MobEffects.WITHER)) {
-                return WITHERED;
-            } else if (entity.isFullyFrozen()) {
-                return FROZEN;
-            } else if (entity.getAbsorptionAmount() > 0.0F) {
-                return ABSORBING;
-            }
-            return entity instanceof Saddleable saddleable && saddleable.isSaddled() ? MOUNT : NORMAL;
-        }
+        return Gui.HeartType.NORMAL;
     }
 }

@@ -1,15 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog].
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [v8.0.1-1.20.1] - 2024-02-14
-### Added
-- Add a config option for choosing if mob plaques should respect local lighting or always show with full brightness
-### Changed
-- Mob plaques now by default show for mobs hidden behind blocks, but only at 1/4 of the normal distance
-
-## [v8.0.0-1.20.1] - 2023-06-27
-- Ported to Minecraft 1.20.1
-
-[Keep a Changelog]: https://keepachangelog.com/en/1.0.0/
+## [v20.4.0-1.20.4] - 2024-02-14
+- Port to Minecraft 1.20.4
+- Port to NeoForge

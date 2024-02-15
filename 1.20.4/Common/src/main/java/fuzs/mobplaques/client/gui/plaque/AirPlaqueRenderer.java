@@ -1,8 +1,10 @@
 package fuzs.mobplaques.client.gui.plaque;
 
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 
 public class AirPlaqueRenderer extends TransitionPlaqueRenderer {
+    private static final ResourceLocation AIR_SPRITE = new ResourceLocation("hud/air");
 
     public AirPlaqueRenderer() {
         super(0x0376BB, 0xED230D);
@@ -19,17 +21,12 @@ public class AirPlaqueRenderer extends TransitionPlaqueRenderer {
     }
 
     @Override
+    protected ResourceLocation getSprite(LivingEntity entity) {
+        return AIR_SPRITE;
+    }
+
+    @Override
     public int getMaxValue(LivingEntity entity) {
         return entity.getMaxAirSupply() / 20;
-    }
-
-    @Override
-    protected int getIconX(LivingEntity entity) {
-        return 16;
-    }
-
-    @Override
-    protected int getIconY(LivingEntity entity) {
-        return 18;
     }
 }

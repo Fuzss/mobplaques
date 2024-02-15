@@ -7,7 +7,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 
 public class ToughnessPlaqueRenderer extends MobPlaqueRenderer {
-    public static final ResourceLocation TOUGHNESS_ICONS_LOCATION = MobPlaques.id("textures/gui/icons.png");
+    private static final ResourceLocation TOUGHNESS_FULL_SPRITE = MobPlaques.id("hud/toughness_full");
 
     @Override
     public int getValue(LivingEntity entity) {
@@ -15,17 +15,7 @@ public class ToughnessPlaqueRenderer extends MobPlaqueRenderer {
     }
 
     @Override
-    protected int getIconX(LivingEntity entity) {
-        return 18;
-    }
-
-    @Override
-    protected int getIconY(LivingEntity entity) {
-        return 0;
-    }
-
-    @Override
-    protected ResourceLocation getTextureSheet() {
-        return TOUGHNESS_ICONS_LOCATION;
+    protected ResourceLocation getSprite(LivingEntity entity) {
+        return TOUGHNESS_FULL_SPRITE;
     }
 }

@@ -8,7 +8,7 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 public class KeyBindingHandler {
     public static final String KEY_CATEGORY = "key.categories." + MobPlaques.MOD_ID;
@@ -21,7 +21,7 @@ public class KeyBindingHandler {
 
     public static void onClientTick$Start(Minecraft minecraft) {
         while (TOGGLE_PLAQUES_KEY_MAPPING.consumeClick()) {
-            ForgeConfigSpec.ConfigValue<Boolean> enableRendering = MobPlaques.CONFIG.get(ClientConfig.class).allowRendering;
+            ModConfigSpec.ConfigValue<Boolean> enableRendering = MobPlaques.CONFIG.get(ClientConfig.class).allowRendering;
             enableRendering.set(!enableRendering.get());
             Component component = Component.translatable(KEY_MOB_PLAQUES_STATUS, enableRendering.get() ? ON_COMPONENT : OFF_COMPONENT);
             minecraft.gui.setOverlayMessage(component, false);
