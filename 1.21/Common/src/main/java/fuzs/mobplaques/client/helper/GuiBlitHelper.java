@@ -7,7 +7,6 @@ import fuzs.mobplaques.config.ClientConfig;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.util.FastColor;
 import org.joml.Matrix4f;
 
 public class GuiBlitHelper {
@@ -18,14 +17,10 @@ public class GuiBlitHelper {
 
     public static void innerBlit(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int minX, int maxX, int minY, int maxY, float zOffset, float u1, float u2, float v1, float v2, int color) {
         Matrix4f matrix4f = poseStack.last().pose();
-        float a = FastColor.ABGR32.alpha(color) / 255.0F;
-        float r = FastColor.ABGR32.red(color) / 255.0F;
-        float g = FastColor.ABGR32.green(color) / 255.0F;
-        float b = FastColor.ABGR32.blue(color) / 255.0F;
-        vertexConsumer.vertex(matrix4f, minX, minY, zOffset).color(r, g, b, a).uv(u1, v1).uv2(packedLight).endVertex();
-        vertexConsumer.vertex(matrix4f, minX, maxY, zOffset).color(r, g, b, a).uv(u1, v2).uv2(packedLight).endVertex();
-        vertexConsumer.vertex(matrix4f, maxX, maxY, zOffset).color(r, g, b, a).uv(u2, v2).uv2(packedLight).endVertex();
-        vertexConsumer.vertex(matrix4f, maxX, minY, zOffset).color(r, g, b, a).uv(u2, v1).uv2(packedLight).endVertex();
+        vertexConsumer.addVertex(matrix4f, minX, minY, zOffset).setColor(color).setUv(u1, v1).setLight(packedLight);
+        vertexConsumer.addVertex(matrix4f, minX, maxY, zOffset).setColor(color).setUv(u1, v2).setLight(packedLight);
+        vertexConsumer.addVertex(matrix4f, maxX, maxY, zOffset).setColor(color).setUv(u2, v2).setLight(packedLight);
+        vertexConsumer.addVertex(matrix4f, maxX, minY, zOffset).setColor(color).setUv(u2, v1).setLight(packedLight);
     }
 
     public static void fill(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int minX, int minY, int maxX, int maxY, float zOffset, int color) {
@@ -40,15 +35,11 @@ public class GuiBlitHelper {
             minY = maxY;
             maxY = tmp;
         }
-        float a = FastColor.ABGR32.alpha(color) / 255.0F;
-        float r = FastColor.ABGR32.red(color) / 255.0F;
-        float g = FastColor.ABGR32.green(color) / 255.0F;
-        float b = FastColor.ABGR32.blue(color) / 255.0F;
         RenderType renderType = MobPlaques.CONFIG.get(ClientConfig.class).behindWalls ? RenderType.textBackgroundSeeThrough() : RenderType.textBackground();
         VertexConsumer bufferBuilder = bufferSource.getBuffer(renderType);
-        bufferBuilder.vertex(matrix4f, minX, minY, zOffset).color(r, g, b, a).uv2(packedLight).endVertex();
-        bufferBuilder.vertex(matrix4f, minX, maxY, zOffset).color(r, g, b, a).uv2(packedLight).endVertex();
-        bufferBuilder.vertex(matrix4f, maxX, maxY, zOffset).color(r, g, b, a).uv2(packedLight).endVertex();
-        bufferBuilder.vertex(matrix4f, maxX, minY, zOffset).color(r, g, b, a).uv2(packedLight).endVertex();
+        bufferBuilder.addVertex(matrix4f, minX, minY, zOffset).setColor(color).setLight(packedLight);
+        bufferBuilder.addVertex(matrix4f, minX, maxY, zOffset).setColor(color).setLight(packedLight);
+        bufferBuilder.addVertex(matrix4f, maxX, maxY, zOffset).setColor(color).setLight(packedLight);
+        bufferBuilder.addVertex(matrix4f, maxX, minY, zOffset).setColor(color).setLight(packedLight);
     }
 }

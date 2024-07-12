@@ -1,6 +1,7 @@
 package fuzs.mobplaques.client.gui.plaque;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import fuzs.puzzleslib.api.core.v1.utility.ResourceLocationHelper;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.resources.ResourceLocation;
@@ -11,8 +12,8 @@ import net.minecraft.world.entity.Saddleable;
 import net.minecraft.world.entity.player.Player;
 
 public class HealthPlaqueRenderer extends TransitionPlaqueRenderer {
-    private static final ResourceLocation HEART_VEHICLE_CONTAINER_SPRITE = new ResourceLocation("hud/heart/vehicle_container");
-    private static final ResourceLocation HEART_VEHICLE_FULL_SPRITE = new ResourceLocation("hud/heart/vehicle_full");
+    private static final ResourceLocation HEART_VEHICLE_CONTAINER_SPRITE = ResourceLocationHelper.withDefaultNamespace("hud/heart/vehicle_container");
+    private static final ResourceLocation HEART_VEHICLE_FULL_SPRITE = ResourceLocationHelper.withDefaultNamespace("hud/heart/vehicle_full");
 
     public HealthPlaqueRenderer() {
         super(0x1EB100, 0xED230D);

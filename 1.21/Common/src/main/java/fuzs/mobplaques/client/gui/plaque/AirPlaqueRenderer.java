@@ -1,10 +1,11 @@
 package fuzs.mobplaques.client.gui.plaque;
 
+import fuzs.puzzleslib.api.core.v1.utility.ResourceLocationHelper;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 
 public class AirPlaqueRenderer extends TransitionPlaqueRenderer {
-    private static final ResourceLocation AIR_SPRITE = new ResourceLocation("hud/air");
+    private static final ResourceLocation AIR_SPRITE = ResourceLocationHelper.withDefaultNamespace("hud/air");
 
     public AirPlaqueRenderer() {
         super(0x0376BB, 0xED230D);
