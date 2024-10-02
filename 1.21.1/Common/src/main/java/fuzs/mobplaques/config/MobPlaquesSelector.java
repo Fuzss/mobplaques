@@ -5,6 +5,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.OwnableEntity;
 import net.minecraft.world.entity.Saddleable;
+import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 
@@ -35,7 +36,7 @@ public enum MobPlaquesSelector {
     }, MONSTER {
         @Override
         public boolean canMobRenderPlaque(LivingEntity entity) {
-            return entity instanceof Monster || !entity.getType().getCategory().isFriendly();
+            return entity instanceof Enemy || !entity.getType().getCategory().isFriendly();
         }
     }, BOSS {
         @Override

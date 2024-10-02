@@ -24,6 +24,14 @@ public class ClientConfig implements ConfigCore {
     public boolean hideAtFullHealth = false;
     @Config(category = KEY_GENERAL_CATEGORY, description = "Show plaques for the entity picked by the crosshair only.")
     public boolean pickedEntity = false;
+    @Config(category = KEY_GENERAL_CATEGORY, description = {"The raytrace range for finding a picked entity.", "Setting this to -1 will make it use the player entity interaction range, which is 3 in survival."})
+    @Config.IntRange(min = -1, max = 64)
+    public int pickedEntityInteractionRange = -1;
+    @Config(category = KEY_GENERAL_CATEGORY, description = {
+            "Coyote time in seconds after which a no longer picked entity will still show the plaques.", "Set to -1 to keep the old entity until a new one is picked by the crosshair."
+    })
+    @Config.IntRange(min = -1)
+    public int pickedEntityDelay = 2;
     @Config(category = KEY_GENERAL_CATEGORY, description = "Custom scale for rendering plaques.")
     @Config.DoubleRange(min = 0.05, max = 2.0)
     public double plaqueScale = 0.5;
