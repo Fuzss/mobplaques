@@ -6,49 +6,54 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.OwnableEntity;
 import net.minecraft.world.entity.Saddleable;
 import net.minecraft.world.entity.monster.Enemy;
-import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 
 import java.util.UUID;
 
-public enum MobPlaquesSelector {
+public enum MobSelector {
     ALL {
         @Override
-        public boolean canMobRenderPlaque(LivingEntity entity) {
+        public boolean isValid(LivingEntity entity) {
             return true;
         }
-    }, TAMED {
+    },
+    TAMED {
         @Override
-        public boolean canMobRenderPlaque(LivingEntity entity) {
+        public boolean isValid(LivingEntity entity) {
             return entity instanceof OwnableEntity tamableAnimal && tamableAnimal.getOwnerUUID() != null;
         }
-    }, TAMED_ONLY_OWNER {
+    },
+    TAMED_ONLY_OWNER {
         @Override
-        public boolean canMobRenderPlaque(LivingEntity entity) {
+        public boolean isValid(LivingEntity entity) {
             UUID owner = Minecraft.getInstance().player.getUUID();
             return entity instanceof OwnableEntity tamableAnimal && owner.equals(tamableAnimal.getOwnerUUID());
         }
-    }, PLAYER {
+    },
+    PLAYER {
         @Override
-        public boolean canMobRenderPlaque(LivingEntity entity) {
+        public boolean isValid(LivingEntity entity) {
             return entity instanceof Player;
         }
-    }, MONSTER {
+    },
+    MONSTER {
         @Override
-        public boolean canMobRenderPlaque(LivingEntity entity) {
+        public boolean isValid(LivingEntity entity) {
             return entity instanceof Enemy || !entity.getType().getCategory().isFriendly();
         }
-    }, BOSS {
+    },
+    BOSS {
         @Override
-        public boolean canMobRenderPlaque(LivingEntity entity) {
+        public boolean isValid(LivingEntity entity) {
             return CommonAbstractions.INSTANCE.isBossMob(entity.getType());
         }
-    }, MOUNT {
+    },
+    MOUNT {
         @Override
-        public boolean canMobRenderPlaque(LivingEntity entity) {
+        public boolean isValid(LivingEntity entity) {
             return entity instanceof Saddleable saddleable && saddleable.isSaddleable();
         }
     };
 
-    public abstract boolean canMobRenderPlaque(LivingEntity entity);
+    public abstract boolean isValid(LivingEntity entity);
 }

@@ -43,26 +43,30 @@ public class MobPlaqueHandler {
     @SuppressWarnings("ConstantValue")
     public static EventResult onRenderNameTag(Entity entity, DefaultedValue<Component> content, EntityRenderer<?> entityRenderer, PoseStack poseStack, MultiBufferSource multiBufferSource, int packedLight, float partialTick) {
         if (!MobPlaques.CONFIG.get(ClientConfig.class).allowRendering.get()) return EventResult.PASS;
-        if (entity instanceof LivingEntity livingEntity && canMobRenderPlaques(livingEntity)) {
+        if (entity instanceof LivingEntity livingEntity && livingEntity.isAlive() && MobPlaques.CONFIG.get(
+                ClientConfig.class).isEntityAllowed(livingEntity)) {
             Minecraft minecraft = Minecraft.getInstance();
             EntityRenderDispatcher dispatcher = entityRenderer.entityRenderDispatcher;
             Vec3 vec3 = entity.getAttachments().getNullable(EntityAttachment.NAME_TAG, 0,
                     entity.getViewYRot(partialTick)
             );
             // other mods might be rendering this mob without a level in some menu, so camera is null then
-            if (vec3 != null && dispatcher.camera != null && dispatcher.camera.getEntity() instanceof LivingEntity &&
-                    EntityVisibilityHelper.isEntityVisible(minecraft.level, livingEntity, minecraft.player, partialTick,
-                            dispatcher
-                    )) {
-                poseStack.pushPose();
-                poseStack.translate(vec3.x, vec3.y + 0.5, vec3.z);
-                poseStack.mulPose(dispatcher.cameraOrientation());
-                float plaqueScale = getPlaqueScale(livingEntity, dispatcher, minecraft.player);
-                // x and z are flipped as of 1.21
-                poseStack.scale(0.025F * plaqueScale, -0.025F * plaqueScale, -0.025F * plaqueScale);
-                int heightOffset = computeHeightOffset(livingEntity, content.get(), plaqueScale, minecraft.font);
-                renderAllPlaques(livingEntity, poseStack, multiBufferSource, packedLight, heightOffset, minecraft.font);
-                poseStack.popPose();
+            if (vec3 != null && dispatcher.camera != null && dispatcher.camera.getEntity() instanceof LivingEntity) {
+                if (EntityVisibilityHelper.isEntityVisible(minecraft.level, livingEntity, minecraft.player, partialTick,
+                        dispatcher
+                )) {
+                    poseStack.pushPose();
+                    poseStack.translate(vec3.x, vec3.y + 0.5, vec3.z);
+                    poseStack.mulPose(dispatcher.cameraOrientation());
+                    float plaqueScale = getPlaqueScale(livingEntity, dispatcher, minecraft.player);
+                    // x and z are flipped as of 1.21
+                    poseStack.scale(0.025F * plaqueScale, -0.025F * plaqueScale, -0.025F * plaqueScale);
+                    int heightOffset = computeHeightOffset(livingEntity, content.get(), plaqueScale, minecraft.font);
+                    renderAllPlaques(livingEntity, poseStack, multiBufferSource, packedLight, heightOffset,
+                            minecraft.font
+                    );
+                    poseStack.popPose();
+                }
             }
         }
 
@@ -71,7 +75,7 @@ public class MobPlaqueHandler {
 
     private static int computeHeightOffset(LivingEntity livingEntity, Component nameComponent, float plaqueScale, Font font) {
         int heightOffset = "deadmau5".equals(nameComponent.getString()) ? -13 : -3;
-        heightOffset -= (int) (MobPlaques.CONFIG.get(ClientConfig.class).heightOffset * (0.5F / plaqueScale));
+        heightOffset -= (int) (MobPlaques.CONFIG.get(ClientConfig.class).offsetHeight * (0.5F / plaqueScale));
         if (MobPlaques.CONFIG.get(ClientConfig.class).renderBelowNameTag) {
             heightOffset += (int) (23 * (0.5F / plaqueScale));
         } else {
@@ -103,25 +107,13 @@ public class MobPlaqueHandler {
         }
     }
 
-    private static boolean canMobRenderPlaques(LivingEntity entity) {
-        if (!MobPlaques.CONFIG.get(ClientConfig.class).mobBlacklist.contains(entity.getType())) {
-            if (MobPlaques.CONFIG.get(ClientConfig.class).disallowedMobSelectors.stream().noneMatch(
-                    selector -> selector.canMobRenderPlaque(entity))) {
-                return MobPlaques.CONFIG.get(ClientConfig.class).allowedMobSelectors.stream().anyMatch(
-                        selector -> selector.canMobRenderPlaque(entity));
-            }
-        }
-
-        return false;
-    }
-
     private static float getPlaqueScale(LivingEntity targetEntity, EntityRenderDispatcher dispatcher, Player player) {
         float plaqueScale = (float) MobPlaques.CONFIG.get(ClientConfig.class).plaqueScale;
         if (MobPlaques.CONFIG.get(ClientConfig.class).scaleWithDistance) {
             double distanceSqr = dispatcher.distanceToSqr(targetEntity);
-            double pickRange = player.entityInteractionRange();
-            double scaleRatio = Mth.clamp(
-                    (distanceSqr - Math.pow(pickRange / 2.0, 2.0)) / (Math.pow(pickRange * 2.0, 2.0) / 2.0), 0.0, 2.0);
+            double entityInteractionRange = player.entityInteractionRange();
+            double scaleRatio = Mth.clamp((distanceSqr - Math.pow(entityInteractionRange / 2.0, 2.0)) /
+                    (Math.pow(entityInteractionRange * 2.0, 2.0) / 2.0), 0.0, 2.0);
             plaqueScale *= (float) (1.0 + scaleRatio);
         }
 

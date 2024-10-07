@@ -13,7 +13,7 @@ public class AirPlaqueRenderer extends TransitionPlaqueRenderer {
 
     @Override
     public boolean wantsToRender(LivingEntity entity) {
-        return this.allowRendering && !this.hideAtFullHealth(entity) && this.belowMaxValue(entity);
+        return this.allowRendering && this.belowMaxValue(entity);
     }
 
     @Override

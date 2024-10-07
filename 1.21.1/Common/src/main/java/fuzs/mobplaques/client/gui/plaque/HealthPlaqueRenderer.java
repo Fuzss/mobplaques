@@ -21,7 +21,7 @@ public class HealthPlaqueRenderer extends TransitionPlaqueRenderer {
 
     @Override
     public boolean wantsToRender(LivingEntity entity) {
-        return this.allowRendering && (!this.hideAtFullHealth(entity) || this.belowMaxValue(entity));
+        return this.allowRendering;
     }
 
     @Override
