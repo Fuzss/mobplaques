@@ -6,6 +6,7 @@ import fuzs.mobplaques.client.handler.PickEntityHandler;
 import fuzs.puzzleslib.api.client.core.v1.ClientModConstructor;
 import fuzs.puzzleslib.api.client.core.v1.context.KeyMappingsContext;
 import fuzs.puzzleslib.api.client.event.v1.ClientTickEvents;
+import fuzs.puzzleslib.api.client.event.v1.renderer.ExtractRenderStateCallback;
 import fuzs.puzzleslib.api.client.event.v1.renderer.GameRenderEvents;
 import fuzs.puzzleslib.api.client.event.v1.renderer.RenderNameTagEvents;
 
@@ -18,6 +19,7 @@ public class MobPlaquesClient implements ClientModConstructor {
 
     private static void registerEventHandlers() {
         RenderNameTagEvents.ALLOW.register(MobPlaqueHandler::onAllowNameTag);
+        ExtractRenderStateCallback.EVENT.register(MobPlaqueHandler::onExtractRenderState);
         RenderNameTagEvents.RENDER.register(MobPlaqueHandler::onRenderNameTag);
         GameRenderEvents.BEFORE.register(PickEntityHandler::onBeforeGameRender);
         ClientTickEvents.START.register(PickEntityHandler::onStartClientTick);

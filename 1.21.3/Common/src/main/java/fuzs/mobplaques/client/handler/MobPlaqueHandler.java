@@ -5,8 +5,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import fuzs.mobplaques.MobPlaques;
 import fuzs.mobplaques.client.gui.plaque.*;
 import fuzs.mobplaques.client.helper.EntityVisibilityHelper;
-import fuzs.mobplaques.client.renderer.entity.state.RenderPropertyKey;
 import fuzs.mobplaques.config.ClientConfig;
+import fuzs.puzzleslib.api.client.util.v1.RenderPropertyKey;
 import fuzs.puzzleslib.api.event.v1.core.EventResult;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -22,6 +22,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.mutable.MutableInt;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -33,6 +34,8 @@ public class MobPlaqueHandler {
     private static final int PLAQUE_HORIZONTAL_DISTANCE = 2;
     private static final int PLAQUE_VERTICAL_DISTANCE = 2;
     public static final Map<ResourceLocation, MobPlaqueRenderer> PLAQUE_RENDERERS = new LinkedHashMap<>();
+    @Nullable
+    private static EventResult renderPlaque;
 
     static {
         PLAQUE_RENDERERS.put(MobPlaques.id("health"), new HealthPlaqueRenderer());
@@ -42,26 +45,25 @@ public class MobPlaqueHandler {
     }
 
     public static EventResult onAllowNameTag(Entity entity, EntityRenderState renderState, Component content, EntityRenderer<?, ?> entityRenderer, float partialTick) {
-        RenderPropertyKey.clearRenderProperties(renderState);
         if (MobPlaqueHandler.canPlaqueRender(entity, entityRenderer, partialTick)) {
-            EventResult result = shouldShowName(entity, entityRenderer) ? EventResult.PASS : EventResult.INTERRUPT;
-            RenderPropertyKey.setRenderProperty(renderState, RENDER_PLAQUE_PROPERTY, result);
-            for (MobPlaqueRenderer mobPlaqueRenderer : PLAQUE_RENDERERS.values()) {
-                mobPlaqueRenderer.extractRenderState((LivingEntity) entity, renderState, partialTick);
-            }
+            renderPlaque = shouldShowName(entity, entityRenderer) ? EventResult.PASS : EventResult.INTERRUPT;
             return EventResult.ALLOW;
         } else {
             return EventResult.PASS;
         }
     }
 
-    private static <T extends Entity> boolean shouldShowName(Entity entity, EntityRenderer<?, ?> entityRenderer) {
-        double distanceToCameraSq = entityRenderer.entityRenderDispatcher.distanceToSqr(entity);
-        return distanceToCameraSq < 4096.0 &&
-                ((EntityRenderer<T, ?>) entityRenderer).shouldShowName((T) entity, distanceToCameraSq);
+    public static void onExtractRenderState(Entity entity, EntityRenderState renderState, EntityRenderer<?, ?> entityRenderer, float partialTick) {
+        if (renderPlaque != null) {
+            RenderPropertyKey.setRenderProperty(renderState, RENDER_PLAQUE_PROPERTY, renderPlaque);
+            renderPlaque = null;
+            for (MobPlaqueRenderer mobPlaqueRenderer : PLAQUE_RENDERERS.values()) {
+                mobPlaqueRenderer.extractRenderState((LivingEntity) entity, renderState, partialTick);
+            }
+        }
     }
 
-    public static boolean canPlaqueRender(Entity entity, EntityRenderer<?, ?> entityRenderer, float partialTick) {
+    private static boolean canPlaqueRender(Entity entity, EntityRenderer<?, ?> entityRenderer, float partialTick) {
         if (!MobPlaques.CONFIG.get(ClientConfig.class).allowRendering.get()) {
             return false;
         } else if (entity instanceof LivingEntity livingEntity && livingEntity.isAlive() &&
@@ -78,6 +80,12 @@ public class MobPlaqueHandler {
         }
 
         return false;
+    }
+
+    private static <T extends Entity> boolean shouldShowName(Entity entity, EntityRenderer<?, ?> entityRenderer) {
+        double distanceToCameraSq = entityRenderer.entityRenderDispatcher.distanceToSqr(entity);
+        return distanceToCameraSq < 4096.0 &&
+                ((EntityRenderer<T, ?>) entityRenderer).shouldShowName((T) entity, distanceToCameraSq);
     }
 
     public static EventResult onRenderNameTag(EntityRenderState renderState, Component content, EntityRenderer<?, ?> entityRenderer, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, float partialTick) {

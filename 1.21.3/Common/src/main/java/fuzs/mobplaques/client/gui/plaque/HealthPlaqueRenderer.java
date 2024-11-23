@@ -1,7 +1,7 @@
 package fuzs.mobplaques.client.gui.plaque;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import fuzs.mobplaques.client.renderer.entity.state.RenderPropertyKey;
+import fuzs.puzzleslib.api.client.util.v1.RenderPropertyKey;
 import fuzs.puzzleslib.api.core.v1.utility.ResourceLocationHelper;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.MultiBufferSource;

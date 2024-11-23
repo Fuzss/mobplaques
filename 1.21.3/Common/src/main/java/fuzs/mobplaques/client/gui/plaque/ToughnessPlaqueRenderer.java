@@ -1,7 +1,7 @@
 package fuzs.mobplaques.client.gui.plaque;
 
 import fuzs.mobplaques.MobPlaques;
-import fuzs.mobplaques.client.renderer.entity.state.RenderPropertyKey;
+import fuzs.puzzleslib.api.client.util.v1.RenderPropertyKey;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
