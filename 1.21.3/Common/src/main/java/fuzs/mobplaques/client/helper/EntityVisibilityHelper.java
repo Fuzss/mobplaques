@@ -18,8 +18,17 @@ import net.minecraft.world.scores.Team;
 
 public class EntityVisibilityHelper {
 
-    public static boolean isEntityVisible(Level level, LivingEntity livingEntity, Player player, float partialTicks, EntityRenderDispatcher entityRenderDispatcher) {
-        if (MobPlaques.CONFIG.get(ClientConfig.class).pickedEntity &&
+    public static boolean isEntityVisible(Minecraft minecraft, LivingEntity livingEntity, float partialTick, boolean mustBePicked) {
+        return isEntityVisible(minecraft.level,
+                livingEntity,
+                minecraft.player,
+                partialTick,
+                minecraft.getEntityRenderDispatcher(),
+                mustBePicked);
+    }
+
+    public static boolean isEntityVisible(Level level, LivingEntity livingEntity, Player player, float partialTicks, EntityRenderDispatcher entityRenderDispatcher, boolean mustBePicked) {
+        if (mustBePicked &&
                 !livingEntity.getUUID().equals(PickEntityHandler.getCrosshairPickEntity())) {
             return false;
         } else if (!shouldShowName(livingEntity)) {
@@ -34,7 +43,7 @@ public class EntityVisibilityHelper {
 
     /**
      * Mostly copied from
-     * {@link net.minecraft.client.renderer.entity.LivingEntityRenderer#shouldShowName(LivingEntity)}.
+     * {@link net.minecraft.client.renderer.entity.LivingEntityRenderer#shouldShowName(LivingEntity, double)}.
      */
     private static boolean shouldShowName(LivingEntity entity) {
         Minecraft minecraft = Minecraft.getInstance();

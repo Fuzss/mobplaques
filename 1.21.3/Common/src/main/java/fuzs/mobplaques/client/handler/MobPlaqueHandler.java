@@ -13,16 +13,17 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Unit;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityAttachment;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.mutable.MutableInt;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -30,12 +31,10 @@ import java.util.List;
 import java.util.Map;
 
 public class MobPlaqueHandler {
-    private static final RenderPropertyKey<EventResult> RENDER_PLAQUE_PROPERTY = MobPlaqueRenderer.createKey("render_plaque");
+    private static final RenderPropertyKey<Unit> RENDER_PLAQUE_PROPERTY = MobPlaqueRenderer.createKey("render_plaque");
     private static final int PLAQUE_HORIZONTAL_DISTANCE = 2;
     private static final int PLAQUE_VERTICAL_DISTANCE = 2;
     public static final Map<ResourceLocation, MobPlaqueRenderer> PLAQUE_RENDERERS = new LinkedHashMap<>();
-    @Nullable
-    private static EventResult renderPlaque;
 
     static {
         PLAQUE_RENDERERS.put(MobPlaques.id("health"), new HealthPlaqueRenderer());
@@ -44,70 +43,66 @@ public class MobPlaqueHandler {
         PLAQUE_RENDERERS.put(MobPlaques.id("toughness"), new ToughnessPlaqueRenderer());
     }
 
-    public static EventResult onAllowNameTag(Entity entity, EntityRenderState renderState, Component content, EntityRenderer<?, ?> entityRenderer, float partialTick) {
-        if (MobPlaqueHandler.canPlaqueRender(entity, entityRenderer, partialTick)) {
-            renderPlaque = shouldShowName(entity, entityRenderer) ? EventResult.PASS : EventResult.INTERRUPT;
-            return EventResult.ALLOW;
-        } else {
-            return EventResult.PASS;
-        }
-    }
-
-    public static void onExtractRenderState(Entity entity, EntityRenderState renderState, EntityRenderer<?, ?> entityRenderer, float partialTick) {
-        if (renderPlaque != null) {
-            RenderPropertyKey.setRenderProperty(renderState, RENDER_PLAQUE_PROPERTY, renderPlaque);
-            renderPlaque = null;
+    public static void onExtractRenderState(Entity entity, EntityRenderState renderState, float partialTick) {
+        if (entity instanceof LivingEntity livingEntity && canPlaqueRender(livingEntity, partialTick)) {
+            RenderPropertyKey.setRenderProperty(renderState, RENDER_PLAQUE_PROPERTY, Unit.INSTANCE);
             for (MobPlaqueRenderer mobPlaqueRenderer : PLAQUE_RENDERERS.values()) {
                 mobPlaqueRenderer.extractRenderState((LivingEntity) entity, renderState, partialTick);
+            }
+            if (renderState.nameTag == null) {
+                // we must force the name tag to render, as the name tag render event does not run unless this is set
+                renderState.nameTag = CommonComponents.EMPTY;
+                renderState.nameTagAttachment = entity.getAttachments()
+                        .getNullable(EntityAttachment.NAME_TAG, 0, entity.getViewYRot(partialTick));
             }
         }
     }
 
-    private static boolean canPlaqueRender(Entity entity, EntityRenderer<?, ?> entityRenderer, float partialTick) {
+    @SuppressWarnings("ConstantValue")
+    private static boolean canPlaqueRender(LivingEntity livingEntity, float partialTick) {
         if (!MobPlaques.CONFIG.get(ClientConfig.class).allowRendering.get()) {
             return false;
-        } else if (entity instanceof LivingEntity livingEntity && livingEntity.isAlive() &&
-                MobPlaques.CONFIG.get(ClientConfig.class).isEntityAllowed(livingEntity)) {
+        } else if (livingEntity.isAlive() && MobPlaques.CONFIG.get(ClientConfig.class).isEntityAllowed(livingEntity)) {
             Minecraft minecraft = Minecraft.getInstance();
-            Vec3 nameTagAttachment = entity.getAttachments()
-                    .getNullable(EntityAttachment.NAME_TAG, 0, entity.getViewYRot(partialTick));
+            Vec3 nameTagAttachment = livingEntity.getAttachments()
+                    .getNullable(EntityAttachment.NAME_TAG, 0, livingEntity.getViewYRot(partialTick));
             // other mods might be rendering this mob without a level in some menu, so camera is null then
-            if (nameTagAttachment != null && entityRenderer.entityRenderDispatcher.camera != null) {
-                if (EntityVisibilityHelper.isEntityVisible(minecraft.level, livingEntity, minecraft.player, partialTick, entityRenderer.entityRenderDispatcher)) {
-                    return true;
-                }
+            if (nameTagAttachment != null && minecraft.getBlockEntityRenderDispatcher().camera != null) {
+                return EntityVisibilityHelper.isEntityVisible(minecraft,
+                        livingEntity,
+                        partialTick,
+                        MobPlaques.CONFIG.get(ClientConfig.class).pickedEntity);
             }
         }
 
         return false;
     }
 
-    private static <T extends Entity> boolean shouldShowName(Entity entity, EntityRenderer<?, ?> entityRenderer) {
-        double distanceToCameraSq = entityRenderer.entityRenderDispatcher.distanceToSqr(entity);
-        return distanceToCameraSq < 4096.0 &&
-                ((EntityRenderer<T, ?>) entityRenderer).shouldShowName((T) entity, distanceToCameraSq);
-    }
-
-    public static EventResult onRenderNameTag(EntityRenderState renderState, Component content, EntityRenderer<?, ?> entityRenderer, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, float partialTick) {
+    public static EventResult onRenderNameTag(EntityRenderState renderState, Component component, EntityRenderer<?, ?> entityRenderer, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, float partialTick) {
 
         if (RenderPropertyKey.containsRenderProperty(renderState, RENDER_PLAQUE_PROPERTY)) {
 
+            Minecraft minecraft = Minecraft.getInstance();
+
             poseStack.pushPose();
+
             Vec3 nameTagAttachment = renderState.nameTagAttachment;
             if (nameTagAttachment != null) {
                 poseStack.translate(nameTagAttachment.x, nameTagAttachment.y + 0.5, nameTagAttachment.z);
             }
-
             poseStack.mulPose(entityRenderer.entityRenderDispatcher.cameraOrientation());
-            Minecraft minecraft = Minecraft.getInstance();
             float plaqueScale = getPlaqueScale(renderState, minecraft.player);
             // x and z are flipped as of 1.21
             poseStack.scale(0.025F * plaqueScale, -0.025F * plaqueScale, -0.025F * plaqueScale);
-            int heightOffset = computeHeightOffset(renderState, content, plaqueScale, minecraft.font);
+
+            int heightOffset = computeHeightOffset(renderState, component, plaqueScale, minecraft.font);
             renderAllPlaques(renderState, poseStack, bufferSource, packedLight, heightOffset, minecraft.font);
+
             poseStack.popPose();
 
-            return RenderPropertyKey.getRenderProperty(renderState, RENDER_PLAQUE_PROPERTY);
+            if (component == CommonComponents.EMPTY) {
+                return EventResult.INTERRUPT;
+            }
         }
 
         return EventResult.PASS;
@@ -135,8 +130,13 @@ public class MobPlaqueHandler {
                 MobPlaqueRenderer plaqueRenderer = iterator.next();
                 if (!plaqueRenderer.isRenderingAllowed(renderState)) continue;
                 int plaqueWidth = plaqueRenderer.getWidth(renderState, font);
-                plaqueRenderer.render(poseStack, multiBufferSource, packedLight,
-                        rowStart + plaqueWidth / 2, heightOffset, font, renderState);
+                plaqueRenderer.render(poseStack,
+                        multiBufferSource,
+                        packedLight,
+                        rowStart + plaqueWidth / 2,
+                        heightOffset,
+                        font,
+                        renderState);
                 maxRowHeight = Math.max(plaqueRenderer.getHeight(renderState, font), maxRowHeight);
                 plaqueWidth += PLAQUE_HORIZONTAL_DISTANCE;
                 rowStart += plaqueWidth;
