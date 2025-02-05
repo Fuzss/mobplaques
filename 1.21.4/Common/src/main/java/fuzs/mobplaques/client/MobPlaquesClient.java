@@ -6,9 +6,9 @@ import fuzs.mobplaques.client.handler.PickEntityHandler;
 import fuzs.puzzleslib.api.client.core.v1.ClientModConstructor;
 import fuzs.puzzleslib.api.client.core.v1.context.KeyMappingsContext;
 import fuzs.puzzleslib.api.client.event.v1.ClientTickEvents;
-import fuzs.puzzleslib.api.client.event.v1.renderer.ExtractRenderStateCallbackV2;
+import fuzs.puzzleslib.api.client.event.v1.renderer.ExtractRenderStateCallback;
 import fuzs.puzzleslib.api.client.event.v1.renderer.GameRenderEvents;
-import fuzs.puzzleslib.api.client.event.v1.renderer.RenderNameTagEvents;
+import fuzs.puzzleslib.api.client.event.v1.renderer.RenderNameTagCallback;
 
 public class MobPlaquesClient implements ClientModConstructor {
 
@@ -18,8 +18,8 @@ public class MobPlaquesClient implements ClientModConstructor {
     }
 
     private static void registerEventHandlers() {
-        ExtractRenderStateCallbackV2.EVENT.register(MobPlaqueHandler::onExtractRenderState);
-        RenderNameTagEvents.RENDER.register(MobPlaqueHandler::onRenderNameTag);
+        ExtractRenderStateCallback.EVENT.register(MobPlaqueHandler::onExtractRenderState);
+        RenderNameTagCallback.EVENT.register(MobPlaqueHandler::onRenderNameTag);
         GameRenderEvents.BEFORE.register(PickEntityHandler::onBeforeGameRender);
         ClientTickEvents.START.register(PickEntityHandler::onStartClientTick);
     }

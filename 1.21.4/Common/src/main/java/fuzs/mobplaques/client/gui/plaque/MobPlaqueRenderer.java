@@ -7,7 +7,7 @@ import fuzs.mobplaques.MobPlaques;
 import fuzs.mobplaques.client.helper.GuiBlitHelper;
 import fuzs.mobplaques.client.renderer.ModRenderType;
 import fuzs.mobplaques.config.ClientConfig;
-import fuzs.puzzleslib.api.client.util.v1.RenderPropertyKey;
+import fuzs.puzzleslib.api.client.renderer.v1.RenderPropertyKey;
 import fuzs.puzzleslib.api.config.v3.ValueCallback;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -63,10 +63,15 @@ public abstract class MobPlaqueRenderer {
         if (MobPlaques.CONFIG.get(ClientConfig.class).renderBackground) {
             int totalWidth = this.getWidth(renderState, font);
             int backgroundColor = Minecraft.getInstance().options.getBackgroundColor(0.25F);
-            GuiBlitHelper.fill(poseStack, bufferSource,
+            GuiBlitHelper.fill(poseStack,
+                    bufferSource,
                     MobPlaques.CONFIG.get(ClientConfig.class).fullBrightness ? 15728880 : packedLight,
-                    posX - totalWidth / 2, posY, posX + totalWidth / 2, posY + this.getHeight(renderState, font), 0.03F, backgroundColor
-            );
+                    posX - totalWidth / 2,
+                    posY,
+                    posX + totalWidth / 2,
+                    posY + this.getHeight(renderState, font),
+                    0.03F,
+                    backgroundColor);
         }
     }
 
@@ -75,17 +80,27 @@ public abstract class MobPlaqueRenderer {
         int totalWidth = this.getWidth(renderState, font);
         Matrix4f matrix4f = poseStack.last().pose();
         if (MobPlaques.CONFIG.get(ClientConfig.class).behindWalls) {
-            font.drawInBatch(component, posX - totalWidth / 2.0F + BACKGROUND_BORDER_SIZE,
-                    posY + BACKGROUND_BORDER_SIZE + 1, ARGB.color(0x20, this.getColor(renderState)), false,
-                    matrix4f, bufferSource, Font.DisplayMode.SEE_THROUGH, 0,
-                    MobPlaques.CONFIG.get(ClientConfig.class).fullBrightness ? 15728880 : packedLight
-            );
+            font.drawInBatch(component,
+                    posX - totalWidth / 2.0F + BACKGROUND_BORDER_SIZE,
+                    posY + BACKGROUND_BORDER_SIZE + 1,
+                    ARGB.color(0x20, this.getColor(renderState)),
+                    false,
+                    matrix4f,
+                    bufferSource,
+                    Font.DisplayMode.SEE_THROUGH,
+                    0,
+                    MobPlaques.CONFIG.get(ClientConfig.class).fullBrightness ? 15728880 : packedLight);
         }
-        font.drawInBatch(component, posX - totalWidth / 2.0F + BACKGROUND_BORDER_SIZE,
-                posY + BACKGROUND_BORDER_SIZE + 1, ARGB.color(0xFF, this.getColor(renderState)), false, matrix4f,
-                bufferSource, Font.DisplayMode.NORMAL, 0,
-                MobPlaques.CONFIG.get(ClientConfig.class).fullBrightness ? 15728880 : packedLight
-        );
+        font.drawInBatch(component,
+                posX - totalWidth / 2.0F + BACKGROUND_BORDER_SIZE,
+                posY + BACKGROUND_BORDER_SIZE + 1,
+                ARGB.color(0xFF, this.getColor(renderState)),
+                false,
+                matrix4f,
+                bufferSource,
+                Font.DisplayMode.NORMAL,
+                0,
+                MobPlaques.CONFIG.get(ClientConfig.class).fullBrightness ? 15728880 : packedLight);
     }
 
     private void renderIcon(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int posX, int posY, Font font, EntityRenderState renderState) {
@@ -98,19 +113,30 @@ public abstract class MobPlaqueRenderer {
 
     protected void innerRenderIcon(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int posX, int posY, float zOffset, ResourceLocation resourceLocation) {
         TextureAtlasSprite textureAtlasSprite = Minecraft.getInstance().getGuiSprites().getSprite(resourceLocation);
-        VertexConsumer vertexConsumer = bufferSource.getBuffer(
-                ModRenderType.ICON_SEE_THROUGH.apply(textureAtlasSprite.atlasLocation()));
+        VertexConsumer vertexConsumer = bufferSource.getBuffer(ModRenderType.ICON_SEE_THROUGH.apply(textureAtlasSprite.atlasLocation()));
         if (MobPlaques.CONFIG.get(ClientConfig.class).behindWalls) {
-            GuiBlitHelper.blitSprite(poseStack, vertexConsumer,
-                    MobPlaques.CONFIG.get(ClientConfig.class).fullBrightness ? 15728880 : packedLight, posX, posY,
-                    zOffset, textureAtlasSprite, ICON_SIZE, ICON_SIZE, ARGB.color(0x20, -1)
-            );
+            GuiBlitHelper.blitSprite(poseStack,
+                    vertexConsumer,
+                    MobPlaques.CONFIG.get(ClientConfig.class).fullBrightness ? 15728880 : packedLight,
+                    posX,
+                    posY,
+                    zOffset,
+                    textureAtlasSprite,
+                    ICON_SIZE,
+                    ICON_SIZE,
+                    ARGB.color(0x20, -1));
         }
         vertexConsumer = bufferSource.getBuffer(ModRenderType.ICON.apply(textureAtlasSprite.atlasLocation()));
-        GuiBlitHelper.blitSprite(poseStack, vertexConsumer,
-                MobPlaques.CONFIG.get(ClientConfig.class).fullBrightness ? 15728880 : packedLight, posX, posY, zOffset,
-                textureAtlasSprite, ICON_SIZE, ICON_SIZE, -1
-        );
+        GuiBlitHelper.blitSprite(poseStack,
+                vertexConsumer,
+                MobPlaques.CONFIG.get(ClientConfig.class).fullBrightness ? 15728880 : packedLight,
+                posX,
+                posY,
+                zOffset,
+                textureAtlasSprite,
+                ICON_SIZE,
+                ICON_SIZE,
+                -1);
     }
 
     protected void renderIconBackground(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int posX, int posY, EntityRenderState renderState) {
@@ -121,8 +147,7 @@ public abstract class MobPlaqueRenderer {
 
     public void setupConfig(ModConfigSpec.Builder builder, ValueCallback callback) {
         callback.accept(builder.comment("Allow for rendering this type of plaque.").define("allow_rendering", true),
-                v -> this.allowRendering = v
-        );
+                v -> this.allowRendering = v);
     }
 
     public void extractRenderState(LivingEntity livingEntity, EntityRenderState renderState, float partialTick) {

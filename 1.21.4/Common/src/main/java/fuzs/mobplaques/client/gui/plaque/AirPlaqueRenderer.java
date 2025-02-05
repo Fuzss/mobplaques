@@ -1,6 +1,6 @@
 package fuzs.mobplaques.client.gui.plaque;
 
-import fuzs.puzzleslib.api.client.util.v1.RenderPropertyKey;
+import fuzs.puzzleslib.api.client.renderer.v1.RenderPropertyKey;
 import fuzs.puzzleslib.api.core.v1.utility.ResourceLocationHelper;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.resources.ResourceLocation;
@@ -17,7 +17,8 @@ public class AirPlaqueRenderer extends TransitionPlaqueRenderer {
 
     @Override
     public boolean isRenderingAllowed(EntityRenderState renderState) {
-        return this.allowRendering && this.isBelowMaxValue(renderState) && RenderPropertyKey.containsRenderProperty(renderState, AIR_SUPPLY_PROPERTY);
+        return this.allowRendering && this.isBelowMaxValue(renderState) &&
+                RenderPropertyKey.containsRenderProperty(renderState, AIR_SUPPLY_PROPERTY);
     }
 
     @Override

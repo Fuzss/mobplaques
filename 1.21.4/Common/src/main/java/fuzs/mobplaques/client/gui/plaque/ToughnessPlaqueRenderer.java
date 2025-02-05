@@ -1,7 +1,7 @@
 package fuzs.mobplaques.client.gui.plaque;
 
 import fuzs.mobplaques.MobPlaques;
-import fuzs.puzzleslib.api.client.util.v1.RenderPropertyKey;
+import fuzs.puzzleslib.api.client.renderer.v1.RenderPropertyKey;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -31,6 +31,8 @@ public class ToughnessPlaqueRenderer extends MobPlaqueRenderer {
     @Override
     public void extractRenderState(LivingEntity livingEntity, EntityRenderState renderState, float partialTick) {
         super.extractRenderState(livingEntity, renderState, partialTick);
-        RenderPropertyKey.setRenderProperty(renderState, ARMOR_TOUGHNESS_PROPERTY, livingEntity.getAttributeValue(Attributes.ARMOR_TOUGHNESS));
+        RenderPropertyKey.setRenderProperty(renderState,
+                ARMOR_TOUGHNESS_PROPERTY,
+                livingEntity.getAttributeValue(Attributes.ARMOR_TOUGHNESS));
     }
 }

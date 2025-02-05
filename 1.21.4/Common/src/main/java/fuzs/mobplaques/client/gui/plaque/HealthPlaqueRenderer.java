@@ -1,7 +1,7 @@
 package fuzs.mobplaques.client.gui.plaque;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import fuzs.puzzleslib.api.client.util.v1.RenderPropertyKey;
+import fuzs.puzzleslib.api.client.renderer.v1.RenderPropertyKey;
 import fuzs.puzzleslib.api.core.v1.utility.ResourceLocationHelper;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -14,8 +14,10 @@ import net.minecraft.world.entity.Saddleable;
 import net.minecraft.world.entity.player.Player;
 
 public class HealthPlaqueRenderer extends TransitionPlaqueRenderer {
-    private static final ResourceLocation HEART_VEHICLE_CONTAINER_SPRITE = ResourceLocationHelper.withDefaultNamespace("hud/heart/vehicle_container");
-    private static final ResourceLocation HEART_VEHICLE_FULL_SPRITE = ResourceLocationHelper.withDefaultNamespace("hud/heart/vehicle_full");
+    private static final ResourceLocation HEART_VEHICLE_CONTAINER_SPRITE = ResourceLocationHelper.withDefaultNamespace(
+            "hud/heart/vehicle_container");
+    private static final ResourceLocation HEART_VEHICLE_FULL_SPRITE = ResourceLocationHelper.withDefaultNamespace(
+            "hud/heart/vehicle_full");
     private static final RenderPropertyKey<Float> HEALTH_PROPERTY = createKey("health");
     private static final RenderPropertyKey<Float> MAX_HEALTH_PROPERTY = createKey("max_health");
     private static final RenderPropertyKey<Float> ABSORPTION_PROPERTY = createKey("absorption");

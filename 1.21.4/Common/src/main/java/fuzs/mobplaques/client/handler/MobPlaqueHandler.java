@@ -6,7 +6,7 @@ import fuzs.mobplaques.MobPlaques;
 import fuzs.mobplaques.client.gui.plaque.*;
 import fuzs.mobplaques.client.helper.EntityVisibilityHelper;
 import fuzs.mobplaques.config.ClientConfig;
-import fuzs.puzzleslib.api.client.util.v1.RenderPropertyKey;
+import fuzs.puzzleslib.api.client.renderer.v1.RenderPropertyKey;
 import fuzs.puzzleslib.api.event.v1.core.EventResult;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -78,7 +78,7 @@ public class MobPlaqueHandler {
         return false;
     }
 
-    public static EventResult onRenderNameTag(EntityRenderState renderState, Component component, EntityRenderer<?, ?> entityRenderer, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, float partialTick) {
+    public static EventResult onRenderNameTag(EntityRenderState renderState, Component component, EntityRenderer<?, ?> entityRenderer, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight) {
 
         if (RenderPropertyKey.containsRenderProperty(renderState, RENDER_PLAQUE_PROPERTY)) {
 
