@@ -13,13 +13,12 @@ public class ArmorPlaqueRenderer extends MobPlaqueRenderer {
 
     @Override
     public boolean isRenderingAllowed(EntityRenderState renderState) {
-        return super.isRenderingAllowed(renderState) &&
-                RenderPropertyKey.containsRenderProperty(renderState, ARMOR_PROPERTY);
+        return super.isRenderingAllowed(renderState) && RenderPropertyKey.has(renderState, ARMOR_PROPERTY);
     }
 
     @Override
     public int getValue(EntityRenderState renderState) {
-        return RenderPropertyKey.getRenderProperty(renderState, ARMOR_PROPERTY);
+        return RenderPropertyKey.getOrDefault(renderState, ARMOR_PROPERTY, 0);
     }
 
     @Override
@@ -30,6 +29,6 @@ public class ArmorPlaqueRenderer extends MobPlaqueRenderer {
     @Override
     public void extractRenderState(LivingEntity livingEntity, EntityRenderState renderState, float partialTick) {
         super.extractRenderState(livingEntity, renderState, partialTick);
-        RenderPropertyKey.setRenderProperty(renderState, ARMOR_PROPERTY, livingEntity.getArmorValue());
+        RenderPropertyKey.set(renderState, ARMOR_PROPERTY, livingEntity.getArmorValue());
     }
 }

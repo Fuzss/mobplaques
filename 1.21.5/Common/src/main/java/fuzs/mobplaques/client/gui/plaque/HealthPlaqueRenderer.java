@@ -10,7 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Saddleable;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 
 public class HealthPlaqueRenderer extends TransitionPlaqueRenderer {
@@ -30,45 +30,45 @@ public class HealthPlaqueRenderer extends TransitionPlaqueRenderer {
 
     @Override
     public boolean isRenderingAllowed(EntityRenderState renderState) {
-        return this.allowRendering && RenderPropertyKey.containsRenderProperty(renderState, HEALTH_PROPERTY);
+        return this.allowRendering && RenderPropertyKey.has(renderState, HEALTH_PROPERTY);
     }
 
     @Override
     public int getValue(EntityRenderState renderState) {
-        float health = RenderPropertyKey.getRenderProperty(renderState, HEALTH_PROPERTY);
-        float maxHealth = RenderPropertyKey.getRenderProperty(renderState, MAX_HEALTH_PROPERTY);
+        float health = RenderPropertyKey.getOrDefault(renderState, HEALTH_PROPERTY, 0.0F);
+        float maxHealth = RenderPropertyKey.getOrDefault(renderState, MAX_HEALTH_PROPERTY, 0.0F);
         return (int) Math.ceil(Math.min(health, maxHealth)) + this.getAbsorptionValue(renderState);
     }
 
     private int getAbsorptionValue(EntityRenderState renderState) {
-        return Mth.ceil(RenderPropertyKey.getRenderProperty(renderState, ABSORPTION_PROPERTY));
+        return Mth.ceil(RenderPropertyKey.getOrDefault(renderState, ABSORPTION_PROPERTY, 0.0F));
     }
 
     @Override
     public int getMaxValue(EntityRenderState renderState) {
-        return (int) Math.ceil(RenderPropertyKey.getRenderProperty(renderState, MAX_HEALTH_PROPERTY)) +
+        return (int) Math.ceil(RenderPropertyKey.getOrDefault(renderState, MAX_HEALTH_PROPERTY, 0.0F)) +
                 this.getAbsorptionValue(renderState);
     }
 
     @Override
     protected void renderIconBackground(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int posX, int posY, EntityRenderState renderState) {
-        ResourceLocation resourceLocation = RenderPropertyKey.getRenderProperty(renderState, CONTAINER_SPRITE_PROPERTY);
+        ResourceLocation resourceLocation = RenderPropertyKey.get(renderState, CONTAINER_SPRITE_PROPERTY);
         this.innerRenderIcon(poseStack, bufferSource, packedLight, posX, posY, 0.01F, resourceLocation);
     }
 
     @Override
     protected ResourceLocation getSprite(EntityRenderState renderState) {
-        return RenderPropertyKey.getRenderProperty(renderState, SPRITE_PROPERTY);
+        return RenderPropertyKey.get(renderState, SPRITE_PROPERTY);
     }
 
     @Override
     public void extractRenderState(LivingEntity livingEntity, EntityRenderState renderState, float partialTick) {
         super.extractRenderState(livingEntity, renderState, partialTick);
-        RenderPropertyKey.setRenderProperty(renderState, HEALTH_PROPERTY, livingEntity.getHealth());
-        RenderPropertyKey.setRenderProperty(renderState, MAX_HEALTH_PROPERTY, livingEntity.getMaxHealth());
-        RenderPropertyKey.setRenderProperty(renderState, ABSORPTION_PROPERTY, livingEntity.getAbsorptionAmount());
-        RenderPropertyKey.setRenderProperty(renderState, SPRITE_PROPERTY, getSprite(livingEntity));
-        RenderPropertyKey.setRenderProperty(renderState, CONTAINER_SPRITE_PROPERTY, getContainerSprite(livingEntity));
+        RenderPropertyKey.set(renderState, HEALTH_PROPERTY, livingEntity.getHealth());
+        RenderPropertyKey.set(renderState, MAX_HEALTH_PROPERTY, livingEntity.getMaxHealth());
+        RenderPropertyKey.set(renderState, ABSORPTION_PROPERTY, livingEntity.getAbsorptionAmount());
+        RenderPropertyKey.set(renderState, SPRITE_PROPERTY, getSprite(livingEntity));
+        RenderPropertyKey.set(renderState, CONTAINER_SPRITE_PROPERTY, getContainerSprite(livingEntity));
     }
 
     public static ResourceLocation getContainerSprite(LivingEntity livingEntity) {
@@ -82,7 +82,7 @@ public class HealthPlaqueRenderer extends TransitionPlaqueRenderer {
     }
 
     private static boolean isMount(LivingEntity livingEntity) {
-        return livingEntity instanceof Saddleable saddleable && saddleable.isSaddled();
+        return livingEntity instanceof Mob mob && mob.isSaddled();
     }
 
     private static Gui.HeartType forEntity(LivingEntity livingEntity) {

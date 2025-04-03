@@ -45,7 +45,7 @@ public class MobPlaqueHandler {
 
     public static void onExtractRenderState(Entity entity, EntityRenderState renderState, float partialTick) {
         if (entity instanceof LivingEntity livingEntity && canPlaqueRender(livingEntity, partialTick)) {
-            RenderPropertyKey.setRenderProperty(renderState, RENDER_PLAQUE_PROPERTY, Unit.INSTANCE);
+            RenderPropertyKey.set(renderState, RENDER_PLAQUE_PROPERTY, Unit.INSTANCE);
             for (MobPlaqueRenderer mobPlaqueRenderer : PLAQUE_RENDERERS.values()) {
                 mobPlaqueRenderer.extractRenderState((LivingEntity) entity, renderState, partialTick);
             }
@@ -80,7 +80,7 @@ public class MobPlaqueHandler {
 
     public static EventResult onRenderNameTag(EntityRenderState renderState, Component component, EntityRenderer<?, ?> entityRenderer, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight) {
 
-        if (RenderPropertyKey.containsRenderProperty(renderState, RENDER_PLAQUE_PROPERTY)) {
+        if (RenderPropertyKey.has(renderState, RENDER_PLAQUE_PROPERTY)) {
 
             Minecraft minecraft = Minecraft.getInstance();
 

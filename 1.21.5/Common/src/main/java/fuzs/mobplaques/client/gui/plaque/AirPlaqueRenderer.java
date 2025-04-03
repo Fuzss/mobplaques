@@ -18,12 +18,12 @@ public class AirPlaqueRenderer extends TransitionPlaqueRenderer {
     @Override
     public boolean isRenderingAllowed(EntityRenderState renderState) {
         return this.allowRendering && this.isBelowMaxValue(renderState) &&
-                RenderPropertyKey.containsRenderProperty(renderState, AIR_SUPPLY_PROPERTY);
+                RenderPropertyKey.has(renderState, AIR_SUPPLY_PROPERTY);
     }
 
     @Override
     public int getValue(EntityRenderState renderState) {
-        return Math.max(0, RenderPropertyKey.getRenderProperty(renderState, AIR_SUPPLY_PROPERTY) / 20);
+        return Math.max(0, RenderPropertyKey.getOrDefault(renderState, AIR_SUPPLY_PROPERTY, 0) / 20);
     }
 
     @Override
@@ -33,13 +33,13 @@ public class AirPlaqueRenderer extends TransitionPlaqueRenderer {
 
     @Override
     public int getMaxValue(EntityRenderState renderState) {
-        return RenderPropertyKey.getRenderProperty(renderState, MAX_AIR_SUPPLY_PROPERTY) / 20;
+        return RenderPropertyKey.getOrDefault(renderState, MAX_AIR_SUPPLY_PROPERTY, 0) / 20;
     }
 
     @Override
     public void extractRenderState(LivingEntity livingEntity, EntityRenderState renderState, float partialTick) {
         super.extractRenderState(livingEntity, renderState, partialTick);
-        RenderPropertyKey.setRenderProperty(renderState, AIR_SUPPLY_PROPERTY, livingEntity.getAirSupply());
-        RenderPropertyKey.setRenderProperty(renderState, MAX_AIR_SUPPLY_PROPERTY, livingEntity.getMaxAirSupply());
+        RenderPropertyKey.set(renderState, AIR_SUPPLY_PROPERTY, livingEntity.getAirSupply());
+        RenderPropertyKey.set(renderState, MAX_AIR_SUPPLY_PROPERTY, livingEntity.getMaxAirSupply());
     }
 }

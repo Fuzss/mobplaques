@@ -5,13 +5,13 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import fuzs.mobplaques.MobPlaques;
 import fuzs.mobplaques.client.helper.GuiBlitHelper;
-import fuzs.mobplaques.client.renderer.ModRenderType;
 import fuzs.mobplaques.config.ClientConfig;
 import fuzs.puzzleslib.api.client.renderer.v1.RenderPropertyKey;
 import fuzs.puzzleslib.api.config.v3.ValueCallback;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.network.chat.Component;
@@ -113,7 +113,7 @@ public abstract class MobPlaqueRenderer {
 
     protected void innerRenderIcon(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int posX, int posY, float zOffset, ResourceLocation resourceLocation) {
         TextureAtlasSprite textureAtlasSprite = Minecraft.getInstance().getGuiSprites().getSprite(resourceLocation);
-        VertexConsumer vertexConsumer = bufferSource.getBuffer(ModRenderType.ICON_SEE_THROUGH.apply(textureAtlasSprite.atlasLocation()));
+        VertexConsumer vertexConsumer = bufferSource.getBuffer(RenderType.textSeeThrough(textureAtlasSprite.atlasLocation()));
         if (MobPlaques.CONFIG.get(ClientConfig.class).behindWalls) {
             GuiBlitHelper.blitSprite(poseStack,
                     vertexConsumer,
@@ -126,7 +126,7 @@ public abstract class MobPlaqueRenderer {
                     ICON_SIZE,
                     ARGB.color(0x20, -1));
         }
-        vertexConsumer = bufferSource.getBuffer(ModRenderType.ICON.apply(textureAtlasSprite.atlasLocation()));
+        vertexConsumer = bufferSource.getBuffer(RenderType.text(textureAtlasSprite.atlasLocation()));
         GuiBlitHelper.blitSprite(poseStack,
                 vertexConsumer,
                 MobPlaques.CONFIG.get(ClientConfig.class).fullBrightness ? 15728880 : packedLight,

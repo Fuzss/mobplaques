@@ -6,6 +6,7 @@ import fuzs.mobplaques.config.ClientConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.player.Player;
@@ -28,16 +29,14 @@ public class EntityVisibilityHelper {
     }
 
     public static boolean isEntityVisible(Level level, LivingEntity livingEntity, Player player, float partialTicks, EntityRenderDispatcher entityRenderDispatcher, boolean mustBePicked) {
-        if (mustBePicked &&
-                !livingEntity.getUUID().equals(PickEntityHandler.getCrosshairPickEntity())) {
+        if (mustBePicked && !livingEntity.getUUID().equals(PickEntityHandler.getCrosshairPickEntity())) {
             return false;
         } else if (!shouldShowName(livingEntity)) {
             // run this earlier than vanilla to avoid raytracing if not necessary
             return false;
         } else {
-            return entityRenderDispatcher.distanceToSqr(livingEntity) < getMaxRenderDistanceSqr(level, livingEntity,
-                    player, partialTicks
-            );
+            return entityRenderDispatcher.distanceToSqr(livingEntity) <
+                    getMaxRenderDistanceSqr(level, livingEntity, player, partialTicks);
         }
     }
 
@@ -56,10 +55,10 @@ public class EntityVisibilityHelper {
                 return switch (entityTeam.getNameTagVisibility()) {
                     case ALWAYS -> isVisible;
                     case NEVER -> false;
-                    case HIDE_FOR_OTHER_TEAMS -> playerTeam == null ? isVisible : entityTeam.isAlliedTo(playerTeam) &&
-                            (entityTeam.canSeeFriendlyInvisibles() || isVisible);
-                    case HIDE_FOR_OWN_TEAM -> playerTeam == null ? isVisible : !entityTeam.isAlliedTo(playerTeam) &&
-                            isVisible;
+                    case HIDE_FOR_OTHER_TEAMS -> playerTeam == null ? isVisible :
+                            entityTeam.isAlliedTo(playerTeam) && (entityTeam.canSeeFriendlyInvisibles() || isVisible);
+                    case HIDE_FOR_OWN_TEAM ->
+                            playerTeam == null ? isVisible : !entityTeam.isAlliedTo(playerTeam) && isVisible;
                 };
             }
         }
@@ -76,7 +75,8 @@ public class EntityVisibilityHelper {
             } else if (entity instanceof Creeper creeper && creeper.isPowered()) {
                 return true;
             } else {
-                for (ItemStack itemStack : entity.getAllSlots()) {
+                for (EquipmentSlot equipmentSlot : EquipmentSlot.VALUES) {
+                    ItemStack itemStack = entity.getItemBySlot(equipmentSlot);
                     if (!itemStack.isEmpty()) {
                         return true;
                     }
@@ -103,9 +103,10 @@ public class EntityVisibilityHelper {
     private static HitResult pickVisual(Level level, LivingEntity livingEntity, Player player, float partialTicks) {
         Vec3 playerEyePosition = player.getEyePosition(partialTicks);
         Vec3 entityEyePosition = livingEntity.getEyePosition(partialTicks);
-        return level.clip(
-                new ClipContext(playerEyePosition, entityEyePosition, ClipContext.Block.VISUAL, ClipContext.Fluid.NONE,
-                        player
-                ));
+        return level.clip(new ClipContext(playerEyePosition,
+                entityEyePosition,
+                ClipContext.Block.VISUAL,
+                ClipContext.Fluid.NONE,
+                player));
     }
 }

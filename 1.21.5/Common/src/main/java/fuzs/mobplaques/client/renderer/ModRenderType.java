@@ -1,46 +1,41 @@
 package fuzs.mobplaques.client.renderer;
 
+import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import fuzs.mobplaques.MobPlaques;
-import net.minecraft.Util;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.TriState;
 
-import java.util.function.Function;
-
-public final class ModRenderType extends RenderType {
+public abstract class ModRenderType extends RenderType {
     /**
-     * Copied from {@link #TEXT}.
+     * Disable depth write as it prevents water behind the text background from rendering.
      */
-    public static final Function<ResourceLocation, RenderType> ICON = Util.memoize((resourceLocation) -> {
-        return RenderType.create(MobPlaques.id("icon")
-                .toString(), DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP, VertexFormat.Mode.QUADS, 1536, false, true, CompositeState.builder()
-                .setShaderState(RENDERTYPE_TEXT_SHADER)
-                .setTextureState(new TextureStateShard(resourceLocation, TriState.FALSE, false))
-                .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
-                .setLightmapState(LIGHTMAP)
-                .createCompositeState(false));
-    });
-    /**
-     * Copied from {@link #TEXT_SEE_THROUGH}, although {@link #RENDERTYPE_SOLID_SHADER} is used, as
-     * {@link #RENDERTYPE_TEXT_SEE_THROUGH_SHADER} does not seem to support depth. Unfortunately
-     * {@link #RENDERTYPE_SOLID_SHADER} messes up the colors when viewing textures from inside water.
-     */
-    public static final Function<ResourceLocation, RenderType> ICON_SEE_THROUGH = Util.memoize((resourceLocation) -> {
-        return RenderType.create(MobPlaques.id("icon_see_through")
-                .toString(), DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP, VertexFormat.Mode.QUADS, 1536, false, true, CompositeState.builder()
-                .setShaderState(RENDERTYPE_SOLID_SHADER)
-                .setTextureState(new TextureStateShard(resourceLocation, TriState.FALSE, false))
-                .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
-                .setLightmapState(LIGHTMAP)
-                .setDepthTestState(NO_DEPTH_TEST)
-                .setWriteMaskState(COLOR_WRITE)
-                .createCompositeState(false));
-    });
+    static final RenderPipeline TEXT_BACKGROUND_PIPELINE = RenderPipelines.register(RenderPipeline.builder(
+                    RenderPipelines.TEXT_SNIPPET,
+                    RenderPipelines.FOG_SNIPPET)
+            .withLocation("pipeline/text_background")
+            .withVertexShader("core/rendertype_text_background")
+            .withFragmentShader("core/rendertype_text_background")
+            .withSampler("Sampler2")
+            .withDepthWrite(false)
+            .withVertexFormat(DefaultVertexFormat.POSITION_COLOR_LIGHTMAP, VertexFormat.Mode.QUADS)
+            .build());
+    private static final RenderType TEXT_BACKGROUND = create(MobPlaques.id("text_background").toString(),
+            1536,
+            false,
+            true,
+            TEXT_BACKGROUND_PIPELINE,
+            CompositeState.builder()
+                    .setTextureState(NO_TEXTURE)
+                    .setLightmapState(LIGHTMAP)
+                    .createCompositeState(false));
 
-    private ModRenderType(String name, VertexFormat format, VertexFormat.Mode mode, int bufferSize, boolean affectsCrumbling, boolean sortOnUpload, Runnable setupState, Runnable clearState) {
-        super(name, format, mode, bufferSize, affectsCrumbling, sortOnUpload, setupState, clearState);
+    private ModRenderType(String string, int i, boolean bl, boolean bl2, Runnable runnable, Runnable runnable2) {
+        super(string, i, bl, bl2, runnable, runnable2);
+    }
+
+    public static RenderType textBackground() {
+        return TEXT_BACKGROUND;
     }
 }

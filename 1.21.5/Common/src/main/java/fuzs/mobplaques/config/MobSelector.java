@@ -1,14 +1,14 @@
 package fuzs.mobplaques.config;
 
-import fuzs.puzzleslib.api.core.v1.CommonAbstractions;
+import fuzs.puzzleslib.api.init.v3.tags.TagFactory;
 import net.minecraft.client.Minecraft;
+import net.minecraft.tags.EntityTypeTags;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.OwnableEntity;
-import net.minecraft.world.entity.Saddleable;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
-
-import java.util.UUID;
 
 public enum MobSelector {
     ALL {
@@ -20,14 +20,14 @@ public enum MobSelector {
     TAMED {
         @Override
         public boolean isValid(LivingEntity entity) {
-            return entity instanceof OwnableEntity tamableAnimal && tamableAnimal.getOwnerUUID() != null;
+            return entity instanceof OwnableEntity ownableEntity && ownableEntity.getOwner() != null;
         }
     },
     TAMED_ONLY_OWNER {
         @Override
         public boolean isValid(LivingEntity entity) {
-            UUID owner = Minecraft.getInstance().player.getUUID();
-            return entity instanceof OwnableEntity tamableAnimal && owner.equals(tamableAnimal.getOwnerUUID());
+            return entity instanceof OwnableEntity ownableEntity && ownableEntity.getOwnerReference() != null &&
+                    ownableEntity.getOwnerReference().matches(Minecraft.getInstance().player);
         }
     },
     PLAYER {
@@ -43,15 +43,17 @@ public enum MobSelector {
         }
     },
     BOSS {
+        static final TagKey<EntityType<?>> BOSSES_ENTITY_TYPE_TAG = TagFactory.COMMON.registerEntityTypeTag("bosses");
+
         @Override
         public boolean isValid(LivingEntity entity) {
-            return CommonAbstractions.INSTANCE.isBossMob(entity.getType());
+            return entity.getType().is(BOSSES_ENTITY_TYPE_TAG);
         }
     },
     MOUNT {
         @Override
         public boolean isValid(LivingEntity entity) {
-            return entity instanceof Saddleable saddleable && saddleable.isSaddleable();
+            return entity.getType().is(EntityTypeTags.CAN_EQUIP_SADDLE);
         }
     };
 

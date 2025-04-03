@@ -14,13 +14,12 @@ public class ToughnessPlaqueRenderer extends MobPlaqueRenderer {
 
     @Override
     public boolean isRenderingAllowed(EntityRenderState renderState) {
-        return super.isRenderingAllowed(renderState) &&
-                RenderPropertyKey.containsRenderProperty(renderState, ARMOR_TOUGHNESS_PROPERTY);
+        return super.isRenderingAllowed(renderState) && RenderPropertyKey.has(renderState, ARMOR_TOUGHNESS_PROPERTY);
     }
 
     @Override
     public int getValue(EntityRenderState renderState) {
-        return Mth.floor(RenderPropertyKey.getRenderProperty(renderState, ARMOR_TOUGHNESS_PROPERTY));
+        return Mth.floor(RenderPropertyKey.getOrDefault(renderState, ARMOR_TOUGHNESS_PROPERTY, 0.0));
     }
 
     @Override
@@ -31,7 +30,7 @@ public class ToughnessPlaqueRenderer extends MobPlaqueRenderer {
     @Override
     public void extractRenderState(LivingEntity livingEntity, EntityRenderState renderState, float partialTick) {
         super.extractRenderState(livingEntity, renderState, partialTick);
-        RenderPropertyKey.setRenderProperty(renderState,
+        RenderPropertyKey.set(renderState,
                 ARMOR_TOUGHNESS_PROPERTY,
                 livingEntity.getAttributeValue(Attributes.ARMOR_TOUGHNESS));
     }
