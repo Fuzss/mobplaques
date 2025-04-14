@@ -10,17 +10,21 @@ import net.minecraft.client.renderer.RenderType;
 public abstract class ModRenderType extends RenderType {
     /**
      * Disable depth write as it prevents water behind the text background from rendering.
+     *
+     * @see RenderPipelines#TEXT_BACKGROUND
      */
-    static final RenderPipeline TEXT_BACKGROUND_PIPELINE = RenderPipelines.register(RenderPipeline.builder(
-                    RenderPipelines.TEXT_SNIPPET,
+    public static final RenderPipeline TEXT_BACKGROUND_PIPELINE = RenderPipeline.builder(RenderPipelines.TEXT_SNIPPET,
                     RenderPipelines.FOG_SNIPPET)
-            .withLocation("pipeline/text_background")
+            .withLocation(MobPlaques.id("pipeline/text_background"))
             .withVertexShader("core/rendertype_text_background")
             .withFragmentShader("core/rendertype_text_background")
             .withSampler("Sampler2")
             .withDepthWrite(false)
             .withVertexFormat(DefaultVertexFormat.POSITION_COLOR_LIGHTMAP, VertexFormat.Mode.QUADS)
-            .build());
+            .build();
+    /**
+     * @see RenderType#TEXT_BACKGROUND
+     */
     private static final RenderType TEXT_BACKGROUND = create(MobPlaques.id("text_background").toString(),
             1536,
             false,
