@@ -1,6 +1,5 @@
 package fuzs.mobplaques.client.gui.plaque;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import fuzs.mobplaques.MobPlaques;
@@ -22,6 +21,7 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 import org.joml.Matrix4f;
 
 public abstract class MobPlaqueRenderer {
+    protected static final int FULL_BRIGHTNESS_PACKED_LIGHT = 0XF000F0;
     protected static final int PLAQUE_HEIGHT = 11;
     protected static final int BACKGROUND_BORDER_SIZE = 1;
     protected static final int ICON_SIZE = 9;
@@ -48,7 +48,7 @@ public abstract class MobPlaqueRenderer {
     }
 
     protected int getColor(EntityRenderState renderState) {
-        return 0xFFFFFF;
+        return ARGB.transparent(-1);
     }
 
     public void render(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int posX, int posY, Font font, EntityRenderState renderState) {
@@ -65,7 +65,8 @@ public abstract class MobPlaqueRenderer {
             int backgroundColor = Minecraft.getInstance().options.getBackgroundColor(0.25F);
             GuiBlitHelper.fill(poseStack,
                     bufferSource,
-                    MobPlaques.CONFIG.get(ClientConfig.class).fullBrightness ? 15728880 : packedLight,
+                    MobPlaques.CONFIG.get(ClientConfig.class).fullBrightness ? FULL_BRIGHTNESS_PACKED_LIGHT :
+                            packedLight,
                     posX - totalWidth / 2,
                     posY,
                     posX + totalWidth / 2,
@@ -89,7 +90,8 @@ public abstract class MobPlaqueRenderer {
                     bufferSource,
                     Font.DisplayMode.SEE_THROUGH,
                     0,
-                    MobPlaques.CONFIG.get(ClientConfig.class).fullBrightness ? 15728880 : packedLight);
+                    MobPlaques.CONFIG.get(ClientConfig.class).fullBrightness ? FULL_BRIGHTNESS_PACKED_LIGHT :
+                            packedLight);
         }
         font.drawInBatch(component,
                 posX - totalWidth / 2.0F + BACKGROUND_BORDER_SIZE,
@@ -100,11 +102,10 @@ public abstract class MobPlaqueRenderer {
                 bufferSource,
                 Font.DisplayMode.NORMAL,
                 0,
-                MobPlaques.CONFIG.get(ClientConfig.class).fullBrightness ? 15728880 : packedLight);
+                MobPlaques.CONFIG.get(ClientConfig.class).fullBrightness ? FULL_BRIGHTNESS_PACKED_LIGHT : packedLight);
     }
 
     private void renderIcon(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int posX, int posY, Font font, EntityRenderState renderState) {
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         posX += this.getWidth(renderState, font) / 2 - BACKGROUND_BORDER_SIZE - ICON_SIZE;
         posY += BACKGROUND_BORDER_SIZE;
         this.renderIconBackground(poseStack, bufferSource, packedLight, posX, posY, renderState);
@@ -117,7 +118,8 @@ public abstract class MobPlaqueRenderer {
         if (MobPlaques.CONFIG.get(ClientConfig.class).behindWalls) {
             GuiBlitHelper.blitSprite(poseStack,
                     vertexConsumer,
-                    MobPlaques.CONFIG.get(ClientConfig.class).fullBrightness ? 15728880 : packedLight,
+                    MobPlaques.CONFIG.get(ClientConfig.class).fullBrightness ? FULL_BRIGHTNESS_PACKED_LIGHT :
+                            packedLight,
                     posX,
                     posY,
                     zOffset,
@@ -129,7 +131,7 @@ public abstract class MobPlaqueRenderer {
         vertexConsumer = bufferSource.getBuffer(RenderType.text(textureAtlasSprite.atlasLocation()));
         GuiBlitHelper.blitSprite(poseStack,
                 vertexConsumer,
-                MobPlaques.CONFIG.get(ClientConfig.class).fullBrightness ? 15728880 : packedLight,
+                MobPlaques.CONFIG.get(ClientConfig.class).fullBrightness ? FULL_BRIGHTNESS_PACKED_LIGHT : packedLight,
                 posX,
                 posY,
                 zOffset,
