@@ -1,0 +1,4 @@
+accessWidener   v2  named
+accessible  class   net/minecraft/client/gui/Gui$HeartType
+accessible  method  net/minecraft/client/renderer/GameRenderer  filterHitResult (Lnet/minecraft/world/phys/HitResult;Lnet/minecraft/world/phys/Vec3;D)Lnet/minecraft/world/phys/HitResult;
+accessible  method  net/minecraft/client/renderer/entity/EntityRenderer shouldShowName  (Lnet/minecraft/world/entity/Entity;D)Z
