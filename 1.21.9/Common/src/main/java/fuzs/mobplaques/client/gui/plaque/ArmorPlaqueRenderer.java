@@ -24,4 +24,9 @@ public class ArmorPlaqueRenderer extends MobPlaqueRenderer {
         super.extractRenderState(livingEntity, renderState, partialTick);
         renderState.armor = livingEntity.getArmorValue();
     }
+
+    @Override
+    public String getName() {
+        return "Armor";
+    }
 }

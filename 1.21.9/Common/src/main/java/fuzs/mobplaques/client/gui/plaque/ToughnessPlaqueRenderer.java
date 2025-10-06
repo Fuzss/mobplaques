@@ -25,4 +25,9 @@ public class ToughnessPlaqueRenderer extends MobPlaqueRenderer {
         super.extractRenderState(livingEntity, renderState, partialTick);
         renderState.toughness = Mth.floor(livingEntity.getAttributeValue(Attributes.ARMOR_TOUGHNESS));
     }
+
+    @Override
+    public String getName() {
+        return "Toughness";
+    }
 }

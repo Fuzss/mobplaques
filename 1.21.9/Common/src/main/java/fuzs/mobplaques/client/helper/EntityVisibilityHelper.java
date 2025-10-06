@@ -44,8 +44,7 @@ public class EntityVisibilityHelper {
     }
 
     /**
-     * Mostly copied from
-     * {@link net.minecraft.client.renderer.entity.LivingEntityRenderer#shouldShowName(LivingEntity, double)}.
+     * @see net.minecraft.client.renderer.entity.LivingEntityRenderer#shouldShowName(LivingEntity, double)
      */
     private static boolean shouldShowName(LivingEntity entity) {
         Minecraft minecraft = Minecraft.getInstance();

@@ -38,4 +38,9 @@ public class AirPlaqueRenderer extends TransitionPlaqueRenderer {
         renderState.airSupply = Math.max(0, livingEntity.getAirSupply() / 20);
         renderState.maxAirSupply = livingEntity.getMaxAirSupply() / 20;
     }
+
+    @Override
+    public String getName() {
+        return "Air";
+    }
 }

@@ -9,7 +9,6 @@ public class MobPlaquesRenderState {
     public int maxHealth;
     public int absorption;
     public ResourceLocation sprite = HealthPlaqueRenderer.getSprite(Gui.HeartType.NORMAL);
-    public ResourceLocation containerSprite = HealthPlaqueRenderer.getSprite(Gui.HeartType.CONTAINER);
     public int armor;
     public int toughness;
     public int airSupply;

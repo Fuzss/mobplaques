@@ -3,6 +3,7 @@ package fuzs.mobplaques.client.gui.plaque;
 import fuzs.mobplaques.client.renderer.entity.state.MobPlaquesRenderState;
 import fuzs.puzzleslib.api.config.v3.ValueCallback;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.neoforged.neoforge.common.ModConfigSpec;
@@ -25,9 +26,9 @@ public abstract class TransitionPlaqueRenderer extends MobPlaqueRenderer {
     }
 
     @Override
-    protected Component getComponent(MobPlaquesRenderState renderState) {
+    protected MutableComponent getTextComponent(MobPlaquesRenderState renderState) {
         return switch (this.plaqueValue) {
-            case ABSOLUTE -> super.getComponent(renderState);
+            case ABSOLUTE -> super.getTextComponent(renderState);
             case ABSOLUTE_WITH_MAX -> Component.literal(
                     this.getValue(renderState) + "/" + this.getMaxValue(renderState));
             case RELATIVE -> Component.literal((int) (this.getValuePercentage(renderState) * 100.0F) + "%");

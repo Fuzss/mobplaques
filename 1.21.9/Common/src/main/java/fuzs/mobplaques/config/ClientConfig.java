@@ -8,13 +8,12 @@ import fuzs.puzzleslib.api.config.v3.ValueCallback;
 import fuzs.puzzleslib.api.config.v3.serialization.ConfigDataSet;
 import fuzs.puzzleslib.api.config.v3.serialization.KeyedValueProvider;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
 import java.util.List;
-import java.util.Map;
+import java.util.Locale;
 
 public class ClientConfig implements ConfigCore {
     private static final String KEY_GENERAL_CATEGORY = "general";
@@ -47,8 +46,10 @@ public class ClientConfig implements ConfigCore {
             description = "Render mob plaques below the mob's name tag instead of above.")
     public boolean renderBelowNameTag = false;
     @Config(category = KEY_GENERAL_CATEGORY,
-            description = "Show a black background box behind plaques. Disabled by default as it doesn't work with shaders.")
+            description = "Show a black background box behind plaques. Disabled with shaders when causing issues.")
     public boolean renderBackground = true;
+    @Config(category = KEY_GENERAL_CATEGORY, description = "Show a dark text shadow behind plaque text.")
+    public boolean renderTextShadow = false;
     @Config(category = KEY_GENERAL_CATEGORY,
             description = "Always render plaques with full brightness to be most visible, ignoring local lighting conditions.")
     public boolean fullBrightness = true;
@@ -78,9 +79,9 @@ public class ClientConfig implements ConfigCore {
         this.allowRendering = builder.comment(
                         "Are mob plaques enabled, toggleable in-game via the dedicated keybinding.")
                 .define("allow_rendering", true);
-        for (Map.Entry<ResourceLocation, MobPlaqueRenderer> entry : MobPlaqueHandler.PLAQUE_RENDERERS.entrySet()) {
-            builder.push(entry.getKey().getPath());
-            entry.getValue().setupConfig(builder, callback);
+        for (MobPlaqueRenderer mobPlaqueRenderer : MobPlaqueHandler.PLAQUE_RENDERERS) {
+            builder.push(mobPlaqueRenderer.getName().toLowerCase(Locale.ROOT));
+            mobPlaqueRenderer.setupConfig(builder, callback);
             builder.pop();
         }
     }
