@@ -19,7 +19,8 @@ import net.minecraft.world.scores.Team;
 
 public class EntityVisibilityHelper {
 
-    public static boolean isEntityVisible(Minecraft minecraft, LivingEntity livingEntity, float partialTick, boolean mustBePicked) {
+    public static boolean isEntityVisible(LivingEntity livingEntity, float partialTick, boolean mustBePicked) {
+        Minecraft minecraft = Minecraft.getInstance();
         return isEntityVisible(minecraft.level,
                 livingEntity,
                 minecraft.player,
@@ -35,8 +36,10 @@ public class EntityVisibilityHelper {
             // run this earlier than vanilla to avoid raytracing if not necessary
             return false;
         } else {
-            return entityRenderDispatcher.distanceToSqr(livingEntity) <
-                    getMaxRenderDistanceSqr(level, livingEntity, player, partialTicks);
+            return entityRenderDispatcher.distanceToSqr(livingEntity) < getMaxRenderDistanceSqr(level,
+                    livingEntity,
+                    player,
+                    partialTicks);
         }
     }
 

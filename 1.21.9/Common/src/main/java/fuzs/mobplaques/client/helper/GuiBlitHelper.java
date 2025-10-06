@@ -43,11 +43,13 @@ public class GuiBlitHelper {
             minX = maxX;
             maxX = tmp;
         }
+
         if (minY < maxY) {
             int tmp = minY;
             minY = maxY;
             maxY = tmp;
         }
+
         RenderType renderType =
                 MobPlaques.CONFIG.get(ClientConfig.class).behindWalls ? RenderType.textBackgroundSeeThrough() :
                         ModRenderType.textBackground();

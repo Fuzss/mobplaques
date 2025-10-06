@@ -1,7 +1,7 @@
 package fuzs.mobplaques.client.gui.plaque;
 
+import fuzs.mobplaques.client.renderer.entity.state.MobPlaquesRenderState;
 import fuzs.puzzleslib.api.config.v3.ValueCallback;
-import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
@@ -18,14 +18,14 @@ public abstract class TransitionPlaqueRenderer extends MobPlaqueRenderer {
         this.defaultLowColor = defaultLowColor;
     }
 
-    public abstract int getMaxValue(EntityRenderState renderState);
+    public abstract int getMaxValue(MobPlaquesRenderState renderState);
 
-    protected boolean isBelowMaxValue(EntityRenderState renderState) {
+    protected boolean isBelowMaxValue(MobPlaquesRenderState renderState) {
         return this.getValue(renderState) < this.getMaxValue(renderState);
     }
 
     @Override
-    protected Component getComponent(EntityRenderState renderState) {
+    protected Component getComponent(MobPlaquesRenderState renderState) {
         return switch (this.plaqueValue) {
             case ABSOLUTE -> super.getComponent(renderState);
             case ABSOLUTE_WITH_MAX -> Component.literal(
@@ -35,7 +35,7 @@ public abstract class TransitionPlaqueRenderer extends MobPlaqueRenderer {
     }
 
     @Override
-    protected int getColor(EntityRenderState renderState) {
+    protected int getColor(MobPlaquesRenderState renderState) {
         if (!this.shiftColors) {
             return super.getColor(renderState);
         } else {
@@ -44,7 +44,7 @@ public abstract class TransitionPlaqueRenderer extends MobPlaqueRenderer {
         }
     }
 
-    private float getValuePercentage(EntityRenderState renderState) {
+    private float getValuePercentage(MobPlaquesRenderState renderState) {
         return Mth.clamp(this.getValue(renderState) / (float) this.getMaxValue(renderState), 0.0F, 1.0F);
     }
 

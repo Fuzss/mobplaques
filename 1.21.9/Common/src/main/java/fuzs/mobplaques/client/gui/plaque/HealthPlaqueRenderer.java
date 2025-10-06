@@ -1,90 +1,86 @@
 package fuzs.mobplaques.client.gui.plaque;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import fuzs.puzzleslib.api.client.renderer.v1.RenderPropertyKey;
+import fuzs.mobplaques.client.renderer.entity.state.MobPlaquesRenderState;
 import fuzs.puzzleslib.api.core.v1.utility.ResourceLocationHelper;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
+import org.jetbrains.annotations.Nullable;
 
 public class HealthPlaqueRenderer extends TransitionPlaqueRenderer {
     private static final ResourceLocation HEART_VEHICLE_CONTAINER_SPRITE = ResourceLocationHelper.withDefaultNamespace(
             "hud/heart/vehicle_container");
     private static final ResourceLocation HEART_VEHICLE_FULL_SPRITE = ResourceLocationHelper.withDefaultNamespace(
             "hud/heart/vehicle_full");
-    private static final RenderPropertyKey<Float> HEALTH_PROPERTY = createKey("health");
-    private static final RenderPropertyKey<Float> MAX_HEALTH_PROPERTY = createKey("max_health");
-    private static final RenderPropertyKey<Float> ABSORPTION_PROPERTY = createKey("absorption");
-    private static final RenderPropertyKey<ResourceLocation> SPRITE_PROPERTY = createKey("sprite");
-    private static final RenderPropertyKey<ResourceLocation> CONTAINER_SPRITE_PROPERTY = createKey("container_sprite");
 
     public HealthPlaqueRenderer() {
         super(0x1EB100, 0xED230D);
     }
 
     @Override
-    public boolean isRenderingAllowed(EntityRenderState renderState) {
-        return this.allowRendering && RenderPropertyKey.has(renderState, HEALTH_PROPERTY);
+    public int getValue(MobPlaquesRenderState renderState) {
+        return Math.min(renderState.health, renderState.maxHealth) + renderState.absorption;
     }
 
     @Override
-    public int getValue(EntityRenderState renderState) {
-        float health = RenderPropertyKey.getOrDefault(renderState, HEALTH_PROPERTY, 0.0F);
-        float maxHealth = RenderPropertyKey.getOrDefault(renderState, MAX_HEALTH_PROPERTY, 0.0F);
-        return (int) Math.ceil(Math.min(health, maxHealth)) + this.getAbsorptionValue(renderState);
-    }
-
-    private int getAbsorptionValue(EntityRenderState renderState) {
-        return Mth.ceil(RenderPropertyKey.getOrDefault(renderState, ABSORPTION_PROPERTY, 0.0F));
+    public int getMaxValue(MobPlaquesRenderState renderState) {
+        return renderState.maxHealth + renderState.absorption;
     }
 
     @Override
-    public int getMaxValue(EntityRenderState renderState) {
-        return (int) Math.ceil(RenderPropertyKey.getOrDefault(renderState, MAX_HEALTH_PROPERTY, 0.0F)) +
-                this.getAbsorptionValue(renderState);
+    protected void renderIconBackground(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int posX, int posY, MobPlaquesRenderState renderState) {
+        this.innerRenderIcon(poseStack, bufferSource, packedLight, posX, posY, 0.01F, renderState.containerSprite);
     }
 
     @Override
-    protected void renderIconBackground(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int posX, int posY, EntityRenderState renderState) {
-        ResourceLocation resourceLocation = RenderPropertyKey.get(renderState, CONTAINER_SPRITE_PROPERTY);
-        this.innerRenderIcon(poseStack, bufferSource, packedLight, posX, posY, 0.01F, resourceLocation);
+    protected ResourceLocation getSprite(MobPlaquesRenderState renderState) {
+        return renderState.sprite;
     }
 
     @Override
-    protected ResourceLocation getSprite(EntityRenderState renderState) {
-        return RenderPropertyKey.get(renderState, SPRITE_PROPERTY);
-    }
-
-    @Override
-    public void extractRenderState(LivingEntity livingEntity, EntityRenderState renderState, float partialTick) {
+    public void extractRenderState(LivingEntity livingEntity, MobPlaquesRenderState renderState, float partialTick) {
         super.extractRenderState(livingEntity, renderState, partialTick);
-        RenderPropertyKey.set(renderState, HEALTH_PROPERTY, livingEntity.getHealth());
-        RenderPropertyKey.set(renderState, MAX_HEALTH_PROPERTY, livingEntity.getMaxHealth());
-        RenderPropertyKey.set(renderState, ABSORPTION_PROPERTY, livingEntity.getAbsorptionAmount());
-        RenderPropertyKey.set(renderState, SPRITE_PROPERTY, getSprite(livingEntity));
-        RenderPropertyKey.set(renderState, CONTAINER_SPRITE_PROPERTY, getContainerSprite(livingEntity));
+        renderState.health = Mth.ceil(livingEntity.getHealth());
+        renderState.maxHealth = Mth.ceil(livingEntity.getMaxHealth());
+        renderState.absorption = Mth.ceil(livingEntity.getAbsorptionAmount());
+        renderState.sprite = this.getSprite(livingEntity);
+        renderState.containerSprite = this.getContainerSprite(livingEntity);
     }
 
-    public static ResourceLocation getContainerSprite(LivingEntity livingEntity) {
-        return isMount(livingEntity) ? HEART_VEHICLE_CONTAINER_SPRITE : Gui.HeartType.CONTAINER.getSprite(
-                livingEntity instanceof Player player && player.level().getLevelData().isHardcore(), false, false);
+    private ResourceLocation getContainerSprite(LivingEntity livingEntity) {
+        return isMount(livingEntity) ? HEART_VEHICLE_CONTAINER_SPRITE :
+                getSprite(Gui.HeartType.CONTAINER, livingEntity);
     }
 
-    public static ResourceLocation getSprite(LivingEntity livingEntity) {
-        return isMount(livingEntity) ? HEART_VEHICLE_FULL_SPRITE :
-                forEntity(livingEntity).getSprite(false, false, false);
+    private ResourceLocation getSprite(LivingEntity livingEntity) {
+        return isMount(livingEntity) ? HEART_VEHICLE_FULL_SPRITE : getSprite(forEntity(livingEntity), livingEntity);
+    }
+
+    public static ResourceLocation getSprite(Gui.HeartType heartType) {
+        return getSprite(heartType, null);
+    }
+
+    private static ResourceLocation getSprite(Gui.HeartType heartType, @Nullable LivingEntity livingEntity) {
+        return heartType.getSprite(isHardcore(livingEntity), false, false);
+    }
+
+    private static boolean isHardcore(@Nullable LivingEntity livingEntity) {
+        return livingEntity instanceof Player player && player.level().getLevelData().isHardcore();
     }
 
     private static boolean isMount(LivingEntity livingEntity) {
         return livingEntity instanceof Mob mob && mob.isSaddled();
     }
 
+    /**
+     * @see net.minecraft.client.gui.Gui.HeartType#forPlayer(Player)
+     */
     private static Gui.HeartType forEntity(LivingEntity livingEntity) {
         if (livingEntity.hasEffect(MobEffects.POISON)) {
             return Gui.HeartType.POISIONED;
@@ -94,7 +90,8 @@ public class HealthPlaqueRenderer extends TransitionPlaqueRenderer {
             return Gui.HeartType.FROZEN;
         } else if (livingEntity.getAbsorptionAmount() > 0.0F) {
             return Gui.HeartType.ABSORBING;
+        } else {
+            return Gui.HeartType.NORMAL;
         }
-        return Gui.HeartType.NORMAL;
     }
 }

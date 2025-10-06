@@ -30,6 +30,14 @@ public class PickEntityHandler {
         return crosshairPickEntity;
     }
 
+    public static void onStartClientTick(Minecraft minecraft) {
+        if (minecraft.level != null && !minecraft.isPaused()) {
+            if (pickDelay > 0) {
+                pickDelay--;
+            }
+        }
+    }
+
     public static void onBeforeGameRender(Minecraft minecraft, GameRenderer gameRenderer, DeltaTracker deltaTracker) {
         if (!MobPlaques.CONFIG.get(ClientConfig.class).allowRendering.get()) return;
         pick(minecraft, gameRenderer, deltaTracker.getGameTimeDeltaPartialTick(true));
@@ -78,18 +86,21 @@ public class PickEntityHandler {
         }
 
         Vec3 viewVector = entity.getViewVector(partialTick);
-        Vec3 vec3 = eyePosition.add(viewVector.x * interactionRange, viewVector.y * interactionRange,
-                viewVector.z * interactionRange
-        );
+        Vec3 vec3 = eyePosition.add(viewVector.x * interactionRange,
+                viewVector.y * interactionRange,
+                viewVector.z * interactionRange);
         AABB aABB = entity.getBoundingBox().expandTowards(viewVector.scale(interactionRange)).inflate(1.0, 1.0, 1.0);
-        EntityHitResult entityHitResult = ProjectileUtil.getEntityHitResult(entity, eyePosition, vec3, aABB,
-                entityX -> (entityX instanceof LivingEntity || entityX instanceof EnderDragonPart) &&
-                        !entityX.isSpectator() && entityX.isPickable(), interactionRangeSqr
-        );
-        return entityHitResult != null && entityHitResult.getLocation().distanceToSqr(eyePosition) <
-                distanceToHitResult ? GameRenderer.filterHitResult(entityHitResult, eyePosition,
-                entityInteractionRange
-        ) : GameRenderer.filterHitResult(hitResult, eyePosition, blockInteractionRange);
+        EntityHitResult entityHitResult = ProjectileUtil.getEntityHitResult(entity,
+                eyePosition,
+                vec3,
+                aABB,
+                entityX -> (entityX instanceof LivingEntity || entityX instanceof EnderDragonPart)
+                        && !entityX.isSpectator() && entityX.isPickable(),
+                interactionRangeSqr);
+        return entityHitResult != null
+                && entityHitResult.getLocation().distanceToSqr(eyePosition) < distanceToHitResult ?
+                GameRenderer.filterHitResult(entityHitResult, eyePosition, entityInteractionRange) :
+                GameRenderer.filterHitResult(hitResult, eyePosition, blockInteractionRange);
     }
 
     /**
@@ -100,14 +111,11 @@ public class PickEntityHandler {
         Vec3 eyePosition = entity.getEyePosition(partialTicks);
         Vec3 viewVector = entity.getViewVector(partialTicks);
         Vec3 vec3 = eyePosition.add(viewVector.x * hitDistance, viewVector.y * hitDistance, viewVector.z * hitDistance);
-        return entity.level().clip(new ClipContext(eyePosition, vec3, ClipContext.Block.VISUAL,
-                hitFluids ? ClipContext.Fluid.ANY : ClipContext.Fluid.NONE, entity
-        ));
-    }
-
-    public static void onStartClientTick(Minecraft minecraft) {
-        if (minecraft.level != null && !minecraft.isPaused()) {
-            if (pickDelay > 0) pickDelay--;
-        }
+        return entity.level()
+                .clip(new ClipContext(eyePosition,
+                        vec3,
+                        ClipContext.Block.VISUAL,
+                        hitFluids ? ClipContext.Fluid.ANY : ClipContext.Fluid.NONE,
+                        entity));
     }
 }

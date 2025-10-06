@@ -13,49 +13,88 @@ import net.minecraft.world.entity.player.Player;
 public enum MobSelector {
     ALL {
         @Override
-        public boolean isValid(LivingEntity entity) {
+        public boolean isSettingEnabled(ClientConfig.MobSelectorsConfig config) {
+            return config.allMobs;
+        }
+
+        @Override
+        public boolean appliesToEntity(LivingEntity livingEntity) {
             return true;
         }
     },
     TAMED {
         @Override
-        public boolean isValid(LivingEntity entity) {
-            return entity instanceof OwnableEntity ownableEntity && ownableEntity.getOwner() != null;
+        public boolean isSettingEnabled(ClientConfig.MobSelectorsConfig config) {
+            return config.tamedAnimals;
+        }
+
+        @Override
+        public boolean appliesToEntity(LivingEntity livingEntity) {
+            return livingEntity instanceof OwnableEntity ownableEntity && ownableEntity.getOwner() != null;
         }
     },
     TAMED_ONLY_OWNER {
         @Override
-        public boolean isValid(LivingEntity entity) {
-            return entity instanceof OwnableEntity ownableEntity && ownableEntity.getOwnerReference() != null &&
-                    ownableEntity.getOwnerReference().matches(Minecraft.getInstance().player);
+        public boolean isSettingEnabled(ClientConfig.MobSelectorsConfig config) {
+            return config.ownedAnimals;
+        }
+
+        @Override
+        public boolean appliesToEntity(LivingEntity livingEntity) {
+            return livingEntity instanceof OwnableEntity ownableEntity && ownableEntity.getOwnerReference() != null
+                    && ownableEntity.getOwnerReference().matches(Minecraft.getInstance().player);
         }
     },
     PLAYER {
         @Override
-        public boolean isValid(LivingEntity entity) {
-            return entity instanceof Player;
+        public boolean isSettingEnabled(ClientConfig.MobSelectorsConfig config) {
+            return config.players;
+        }
+
+        @Override
+        public boolean appliesToEntity(LivingEntity livingEntity) {
+            return livingEntity instanceof Player;
         }
     },
     MONSTER {
         @Override
-        public boolean isValid(LivingEntity entity) {
-            return entity instanceof Enemy || !entity.getType().getCategory().isFriendly();
+        public boolean isSettingEnabled(ClientConfig.MobSelectorsConfig config) {
+            return config.monsters;
+        }
+
+        @Override
+        public boolean appliesToEntity(LivingEntity livingEntity) {
+            return livingEntity instanceof Enemy || !livingEntity.getType().getCategory().isFriendly();
         }
     },
     BOSS {
         static final TagKey<EntityType<?>> BOSSES_ENTITY_TYPE_TAG = TagFactory.COMMON.registerEntityTypeTag("bosses");
 
         @Override
-        public boolean isValid(LivingEntity entity) {
-            return entity.getType().is(BOSSES_ENTITY_TYPE_TAG);
+        public boolean isSettingEnabled(ClientConfig.MobSelectorsConfig config) {
+            return config.bosses;
+        }
+
+        @Override
+        public boolean appliesToEntity(LivingEntity livingEntity) {
+            return livingEntity.getType().is(BOSSES_ENTITY_TYPE_TAG);
         }
     },
     MOUNT {
         @Override
-        public boolean isValid(LivingEntity entity) {
-            return entity.getType().is(EntityTypeTags.CAN_EQUIP_SADDLE);
+        public boolean isSettingEnabled(ClientConfig.MobSelectorsConfig config) {
+            return config.mounts;
+        }
+
+        @Override
+        public boolean appliesToEntity(LivingEntity livingEntity) {
+            return livingEntity.getType().is(EntityTypeTags.CAN_EQUIP_SADDLE);
         }
     };
 
-    public abstract boolean isValid(LivingEntity entity);
+    public static final MobSelector[] VALUES = values();
+
+    public abstract boolean isSettingEnabled(ClientConfig.MobSelectorsConfig config);
+
+    public abstract boolean appliesToEntity(LivingEntity livingEntity);
 }
