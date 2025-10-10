@@ -48,13 +48,12 @@ public abstract class MobPlaqueRenderer {
     }
 
     public final Component getComponent(MobPlaquesRenderState renderState) {
-        return Component.empty()
-                .append(this.getTextComponent(renderState).withColor(this.getColor(renderState)))
-                .append(Component.object(new AtlasSprite(AtlasIds.GUI, this.getSprite(renderState))));
+        return this.getTextComponent(renderState)
+                .append(Component.object(new AtlasSprite(AtlasIds.GUI, this.getSprite(renderState))).withColor(-1));
     }
 
     protected int getColor(MobPlaquesRenderState renderState) {
-        return ARGB.transparent(-1);
+        return -1;
     }
 
     public void submit(int posX, int posY, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, EntityRenderState entityRenderState, MobPlaquesRenderState renderState) {
@@ -110,7 +109,8 @@ public abstract class MobPlaqueRenderer {
                             MobPlaques.CONFIG.get(ClientConfig.class).renderTextShadow,
                             Font.DisplayMode.SEE_THROUGH,
                             packedLight,
-                            ARGB.color(MobPlaques.CONFIG.get(ClientConfig.class).fullBrightness ? 0x80 : 0x20, -1),
+                            ARGB.color(MobPlaques.CONFIG.get(ClientConfig.class).fullBrightness ? 0x80 : 0x20,
+                                    this.getColor(renderState)),
                             0,
                             entityRenderState.outlineColor);
         }
@@ -123,7 +123,7 @@ public abstract class MobPlaqueRenderer {
                         MobPlaques.CONFIG.get(ClientConfig.class).renderTextShadow,
                         Font.DisplayMode.NORMAL,
                         packedLight,
-                        -1,
+                        ARGB.opaque(this.getColor(renderState)),
                         0,
                         entityRenderState.outlineColor);
     }
