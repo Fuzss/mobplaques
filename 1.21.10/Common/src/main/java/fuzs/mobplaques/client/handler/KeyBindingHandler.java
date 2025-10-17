@@ -28,6 +28,7 @@ public class KeyBindingHandler {
                 KeyActivationHandler.forGame((Minecraft minecraft) -> {
                     ModConfigSpec.ConfigValue<Boolean> enableRendering = MobPlaques.CONFIG.get(ClientConfig.class).allowRendering;
                     enableRendering.set(!enableRendering.get());
+                    enableRendering.save();
                     Component component = Component.translatable(KEY_MOB_PLAQUES_STATUS,
                             enableRendering.get() ? ON_COMPONENT : OFF_COMPONENT);
                     minecraft.gui.setOverlayMessage(component, false);
