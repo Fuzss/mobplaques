@@ -3,15 +3,15 @@ package fuzs.mobplaques.common.client.gui.plaque;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import fuzs.mobplaques.common.MobPlaques;
-import fuzs.mobplaques.common.client.renderer.rendertype.ModRenderType;
 import fuzs.mobplaques.common.client.renderer.entity.state.MobPlaquesRenderState;
+import fuzs.mobplaques.common.client.renderer.rendertype.ModRenderType;
 import fuzs.mobplaques.common.config.ClientConfig;
 import fuzs.puzzleslib.common.api.config.v3.ValueCallback;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.data.AtlasIds;
 import net.minecraft.network.chat.Component;
@@ -113,7 +113,7 @@ public abstract class MobPlaqueRenderer {
                             ARGB.color(MobPlaques.CONFIG.get(ClientConfig.class).fullBrightness ? 0x80 : 0x20,
                                     this.getColor(renderState)),
                             0,
-                            entityRenderState.outlineColor);
+                            0);
         }
 
         submitNodeCollector.order(1)
@@ -126,7 +126,7 @@ public abstract class MobPlaqueRenderer {
                         packedLight,
                         ARGB.opaque(this.getColor(renderState)),
                         0,
-                        entityRenderState.outlineColor);
+                        0);
     }
 
     protected abstract Identifier getSprite(MobPlaquesRenderState renderState);
