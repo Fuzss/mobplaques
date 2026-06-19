@@ -9,6 +9,7 @@ import fuzs.puzzleslib.common.api.config.v3.serialization.ConfigDataSet;
 import fuzs.puzzleslib.common.api.config.v3.serialization.KeyedValueProvider;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypeIds;
 import net.minecraft.world.entity.LivingEntity;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
@@ -68,7 +69,9 @@ public class ClientConfig implements ConfigCore {
     @Config(category = KEY_GENERAL_CATEGORY,
             name = "no_plaque_mobs",
             description = {"Entities blacklisted from showing any plaques.", ConfigDataSet.CONFIG_DESCRIPTION})
-    List<String> noPlaqueMobsRaw = KeyedValueProvider.asString(Registries.ENTITY_TYPE, EntityType.ARMOR_STAND);
+    List<String> noPlaqueMobsRaw = KeyedValueProvider.<EntityType<?>>tags()
+            .add(EntityTypeIds.ARMOR_STAND)
+            .asStringList();
     @Config(category = KEY_GENERAL_CATEGORY, description = "Selectors for choosing mobs to render plaques for.")
     public final MobSelectorsConfig mobSelectors = new MobSelectorsConfig();
 

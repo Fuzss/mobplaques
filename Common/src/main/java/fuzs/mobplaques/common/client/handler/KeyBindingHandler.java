@@ -31,7 +31,7 @@ public class KeyBindingHandler {
                     enableRendering.save();
                     Component component = Component.translatable(KEY_MOB_PLAQUES_STATUS,
                             enableRendering.get() ? ON_COMPONENT : OFF_COMPONENT);
-                    minecraft.gui.setOverlayMessage(component, false);
+                    minecraft.gui.hud.setOverlayMessage(component, false);
                 }));
     }
 }

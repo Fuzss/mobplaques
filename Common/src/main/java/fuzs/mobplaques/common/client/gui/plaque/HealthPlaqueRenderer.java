@@ -2,7 +2,7 @@ package fuzs.mobplaques.common.client.gui.plaque;
 
 import fuzs.mobplaques.common.MobPlaques;
 import fuzs.mobplaques.common.client.renderer.entity.state.MobPlaquesRenderState;
-import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.Hud;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffects;
@@ -51,11 +51,11 @@ public class HealthPlaqueRenderer extends TransitionPlaqueRenderer {
         return isMount(livingEntity) ? HEART_VEHICLE_FULL_SPRITE : getSprite(forEntity(livingEntity), livingEntity);
     }
 
-    public static Identifier getSprite(Gui.HeartType heartType) {
+    public static Identifier getSprite(Hud.HeartType heartType) {
         return getSprite(heartType, null);
     }
 
-    private static Identifier getSprite(Gui.HeartType heartType, @Nullable LivingEntity livingEntity) {
+    private static Identifier getSprite(Hud.HeartType heartType, @Nullable LivingEntity livingEntity) {
         Identifier identifier = heartType.getSprite(isHardcore(livingEntity), false, false);
         return MobPlaques.id(identifier.getPath());
     }
@@ -69,19 +69,19 @@ public class HealthPlaqueRenderer extends TransitionPlaqueRenderer {
     }
 
     /**
-     * @see net.minecraft.client.gui.Gui.HeartType#forPlayer(Player)
+     * @see net.minecraft.client.gui.Hud.HeartType#forPlayer(Player)
      */
-    private static Gui.HeartType forEntity(LivingEntity livingEntity) {
+    private static Hud.HeartType forEntity(LivingEntity livingEntity) {
         if (livingEntity.hasEffect(MobEffects.POISON)) {
-            return Gui.HeartType.POISIONED;
+            return Hud.HeartType.POISIONED;
         } else if (livingEntity.hasEffect(MobEffects.WITHER)) {
-            return Gui.HeartType.WITHERED;
+            return Hud.HeartType.WITHERED;
         } else if (livingEntity.isFullyFrozen()) {
-            return Gui.HeartType.FROZEN;
+            return Hud.HeartType.FROZEN;
         } else if (livingEntity.getAbsorptionAmount() > 0.0F) {
-            return Gui.HeartType.ABSORBING;
+            return Hud.HeartType.ABSORBING;
         } else {
-            return Gui.HeartType.NORMAL;
+            return Hud.HeartType.NORMAL;
         }
     }
 }
