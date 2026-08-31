@@ -1,9 +1,16 @@
 {
   "branches": {
-    "1.21.11": "archived",
-    "1.21.1": "maintained",
     "1.20.1": "fixes",
+    "1.21.1": "maintained",
+    "1.21.11": "archived",
     "26.1.x": "maintained",
     "26.2.x": "primary"
+  },
+  "properties": {
+    "distributions.curseforge.id": "686434",
+    "distributions.curseforge.slug": "mob-plaques",
+    "distributions.github.slug": "mob-plaques",
+    "distributions.modrinth.id": "3b1CFIR5",
+    "distributions.modrinth.slug": "mob-plaques"
   }
 }
