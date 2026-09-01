@@ -6,11 +6,17 @@
     "26.1.x": "maintained",
     "26.2.x": "primary"
   },
-  "properties": {
-    "distributions.curseforge.id": "686434",
-    "distributions.curseforge.slug": "mob-plaques",
-    "distributions.github.slug": "mob-plaques",
-    "distributions.modrinth.id": "3b1CFIR5",
-    "distributions.modrinth.slug": "mob-plaques"
+  "distributions": {
+    "curseforge": {
+      "id": "686434",
+      "slug": "mob-plaques"
+    },
+    "github": {
+      "slug": "mob-plaques"
+    },
+    "modrinth": {
+      "id": "3b1CFIR5",
+      "slug": "mob-plaques"
+    }
   }
 }
